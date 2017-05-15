@@ -53,6 +53,7 @@ echo "<li>".$row['Tables_in_ObsLogistico']."</li>";
 </div>
 <div class="form-row">
 <samp>Tabla</samp>
+<input type="text" name="tablename" class="input-text small input-error" />
 <input  class="input-text small"  type="file" name="userfile" size="20" />
 <select name="table" >
 <option value"new">Nuevo</option>	
