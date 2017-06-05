@@ -43,25 +43,16 @@ class Fuentes extends CI_Controller {
 		$d = DateTime::createFromFormat($format, $date);
 		return $d && $d->format($format) == $date;
 	}
-	private function periodo($periodo=null,$ano = null){
-		if($ano and !$periodo){
-			$p=[];
-			for($i=1;$i<=12;$i++){
-				$inicio = $ano."-".$i."-01";
-				$fin = $ano."-".$i."-01";		
-				$fin = date("Y-m-t", strtotime($fin) ) ;
-				$p[] = [$inicio,$fin,$i,12];		
-			}
+	private function periodo($periodo=null,$anno = null){
+		$periodo=	preg_replace("/[^A-Za-z0-9 ]/", '', $periodo);
 
-		}
-		if($periodo  and $ano){
-			$p=[];
-			$q = $this->db->query("Select * from SYS_periodos where upper(periodo) = upper('$periodo')")->result_array();
+		if($periodo  and $anno){
+			$q = $this->db->query("Select * from SYS_periodos where upper(original) = upper('$periodo')")->result_array();
 			foreach($q as $row){
-				$inicio = $ano."-".$row['code']."-01";
-				$fin = $ano."-".$row['code']."-01";		
+				$inicio = $anno."-".$row['inicio']."-01";
+				$fin = $anno."-".$row['fin']."-01";		
 				$fin = date("Y-m-t", strtotime($fin) ) ;
-				$p[] = [$inicio,$fin,$row['code'],$row['divisor']];		
+				$p = Array('inicio'=>$inicio,'fin'=>$fin,'final'=>$row['final'],'print'=>$row['print'],'campo'=>$row['campo']);
 			}
 
 		}
@@ -101,8 +92,6 @@ class Fuentes extends CI_Controller {
 	private function loadcsv($file,$table){
 		$sql="";
 		$periodo  = $this->input->post('periodo');
-		$periodoInicio  = $this->input->post('periodoInicio');
-		$periodoFin  = $this->input->post('periodoFin');
 		$datetime  = $this->input->post('datetime');
 		$ano  = $this->input->post('ano');
 		$periodoano  = $this->input->post('periodoano');
@@ -126,12 +115,6 @@ class Fuentes extends CI_Controller {
 				$field_count++;
 				$fields[] = $f;
 				$fieldtypes[] = " DOUBLE";
-				if(strlen($periodoInicio)>0)
-					if(strtoupper($periodoInicio)==strtoupper($f))
-						$periodoInicio=$i;
-				if(strlen($periodoFin)>0)
-					if(strtoupper($periodoFin)==strtoupper($f))
-						$periodoFin=$i;
 				if(strlen($datetime)>0)
 					if(strtoupper($datetime)==strtoupper($f))
 						$datetime=$i;
@@ -161,41 +144,103 @@ class Fuentes extends CI_Controller {
 				if($this->is_date($data[$i]))
 					$fieldtypes[$i] = " DATETIME ";
 			}
-			if($periodoInicio>0 and $periodoFin>0) // Dos datetime inicio y fin
-				$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) . ",'".$data[$periodoInicio]."','".$data[$periodoFin]."',MONTH('".$data[$periodoInicio]."'),YEAR('".$data[$periodoInicio]."'),1)";
-			if(strlen($datetime)>0)  // un solo datetime
-				$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) . ",'".$data[$datetime]."','".$data[$datetime]."',MONTH('".$data[$periodoInicio]."'),YEAR('".$data[$datetime]."'),1)";
-			if(strlen($periodo)>0 and strlen($periodoano)>0){ // periodos en formato: mes, mes1-mes2, año 
-				$p = $this->periodo($data[$periodo],$data[$periodoano]);
-				foreach($p as $m){
-					$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) . ",'".$m[0]."','".$m[1]."',YEAR('".date($m[0])."'),".$m[2]." ,".$m[3].")";
-				}
-			}
 
-			if(strlen($periodo)>0 and !strlen($periodoano)>0){ // periodos en formato: mes, mes1-mes2, año 
-				$p = $this->periodo($data[$periodo],null);
-				print_r($p);		
+
+			/* CODIGO MAGICO, AQUI SE ARMA EL INSERT, LEER CON CUIDADO Y MIRANDO LA BASE DE DATOS */
+			$SYS= Array( 
+					"SYS_MES"=>"''",
+					"SYS_TRIMESTRE"=>"''",
+					"SYS_TRIMESTRE_MOVIL"=>"''",
+					"SYS_SEMESTRE"=>"''",
+					"SYS_ANNO"=>"''",
+					"SYS_PERIODO_INICIO"=>"''",
+					"SYS_PERIODO_FIN"=>"''",
+					"SYS_PAIS"=>"''",
+					"SYS_REGION"=>"''",
+					"SYS_PROVINCIA"=>"''",
+					"SYS_COMUNA"=>"''"
+				   );
+			$PRINT = Array(
+					"SYS_MES_PRINT"=>"''",
+					"SYS_TRIMESTRE_PRINT"=>"''",
+					"SYS_TRIMESTRE_MOVIL_PRINT"=>"''",
+					"SYS_PAIS"=>"''",
+					"SYS_REGION_PRINT"=>"''",
+					"SYS_PROVINCIA_PRINT"=>"''",
+					"SYS_COMUNA_PRINT"=>"''"
+				      );
+			/*
+
+				CASOS:
+					1 Solo año: todo
+					2 periodo y año: listo
+					3 lugar - region: todo
+					4 lugar - provincia: todo
+					5 lugar - comuna: todo
+					6 lugar - pais: todo
+
+
+
+			*/
+
+				//CASO POR CASO SE AGREGAN LOS CAMPOS
+			if(strlen($periodo)>0 and strlen($periodoano)>0){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
+
+				$p = $this->periodo($data[$periodo],$data[$periodoano]); // p contiene inicio,fin,final,print,campo
+
+				$SYS[$p['campo']]="'".$p['final']."'"; //MIRA LA TABLA SYS_periodo
+				$PRINT[$p['campo']."_PRINT"]="'".$p['print']."'"; //MIRA LA TABLA SYS_periodo
+
+				$SYS["SYS_ANNO"]=$data[$periodoano];
+
+				$SYS["SYS_PERIODO_INICIO"] = "'".$p['inicio']."'"; 
+				$SYS["SYS_PERIODO_FIN"] = "'".$p['fin']."'"; 
 			}
-			if(!strlen($periodo)>0 and strlen($periodoano)>0){ // periodos en formato: mes, mes1-mes2, año 
-				$p = $this->periodo(null,$data[$periodoano]);
-				foreach($p as $m){
-					$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) . ",'".$m[0]."','".$m[1]."',YEAR('".date($m[0])."'),".$m[2]." ,".$m[3].")";
-				}
-			}
+			
+
+			$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")";
+
 		}
 
 		for($i =0;$i<count($fieldtypes);$i++){
 			$fields[$i+1] .= $fieldtypes[$i];
 		}
 
+		$SYS= Array( 
+				"SYS_MES VARCHAR(255)",
+				"SYS_TRIMESTRE VARCHAR(255)",
+				"SYS_TRIMESTRE_MOVIL VARCHAR(255)",
+				"SYS_SEMESTRE VARCHAR(255)",
+				"SYS_ANNO VARCHAR(255)",
+				"SYS_PERIODO_INICIO DATETIME",
+				"SYS_PERIODO_FIN DATETIME",
+				"SYS_PAIS VARCHAR(255)",
+				"SYS_REGION VARCHAR(255)",
+				"SYS_PROVINCIA VARCHAR(255)",
+				"SYS_COMUNA VARCHAR(255)"
+			   );
+		$PRINT = Array(
+				"SYS_MES_PRINT VARCHAR(255)",
+				"SYS_TRIMESTRE_PRINT VARCHAR(255)",
+				"SYS_TRIMESTRE_MOVIL_PRINT VARCHAR(255)",
+				"SYS_PAIS_PRINT VARCHAR(255)",
+				"SYS_REGION_PRINT VARCHAR(255)",
+				"SYS_PROVINCIA_PRINT VARCHAR(255)",
+				"SYS_COMUNA_PRINT VARCHAR(255)"
+			      );
 
-		$sqlcreate = "CREATE TABLE if not exists $table (" . implode(', ', $fields) . ", SYS_periodoInicio Datetime, SYS_periodoFin Datetime, SYS_ano int,SYS_mes int, SYS_divisor int)";
+		$sqlcreate = "CREATE TABLE if not exists $table (" . implode(', ', $fields) . ",".implode(', ',$SYS).",".implode(',',$PRINT)." )";
 		if(sizeof($realfields>11)){
 			$realfields=array_slice($realfields,0,11);
 		}
-		$unique = "ALTER TABLE $table ADD UNIQUE (".implode(", ",$realfields).", SYS_periodoInicio , SYS_periodoFin, SYS_ano ,SYS_mes , SYS_divisor )";
+		$this->db->query("DROP TABLE IF EXISTS $table");
 		$this->db->query($sqlcreate);
-		$this->db->query($unique);
+
+
+		//$unique = "ALTER TABLE $table ADD UNIQUE (".implode(", ",$realfields)."," .implode(', ',$SYS).",".implode(',',$PRINT)."  )";
+		//$this->db->query($unique);
+
+
 		foreach($sql as $s)
 			$this->db->query($s);
 		fclose($handle);

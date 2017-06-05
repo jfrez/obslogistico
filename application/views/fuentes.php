@@ -36,36 +36,24 @@ echo "<li>".$row['Tables_in_ObsLogistico']."</li>";
 <h2>Cargar CSV</h2>
 <div class="form-row">
 <samp>Columna Mes</samp>
-<input type="text" name="periodo" class="input-text small" />
-</div>
-<div class="form-row">
-<samp>Columnas Periodo</samp>
-<input type="text" name="periodoInicio" class="input-text small" />
-<input type="text" name="periodoFin" class="input-text small" />
+<input type="text" name="periodo" value="periodo" class="input-text small" />
 </div>
 <div class="form-row">
 <samp>Columna Datetime</samp>
-<input type="text" name="datetime" class="input-text small" />
+<input type="text" name="datetime" value="fecha" class="input-text small" />
 </div>
 <div class="form-row">
 <samp>Columna Año</samp>
-<input type="text" name="periodoano" class="input-text small input-error" />
+<input type="text" name="periodoano" value="anno" class="input-text small input-error" />
 </div>
 <div class="form-row">
 <samp>Tabla</samp>
-<input type="text" name="tablename" class="input-text small input-error" />
+<input type="text" name="tablename" value="tmptable" class="input-text small input-error" />
 <input  class="input-text small"  type="file" name="userfile" size="20" />
-<select name="table" >
-<option value"new">Nuevo</option>	
-<?php 
-foreach( $tables as $row){
-echo "<option value".$row['Tables_in_ObsLogistico'].">".$row['Tables_in_ObsLogistico']."</option>";	
-}
-?>
 </div>
 
 
-<input type="submit" value="upload" />
+<input type="submit" class="button" value="upload" />
 
 </form>
 
