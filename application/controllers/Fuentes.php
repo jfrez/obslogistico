@@ -89,6 +89,14 @@ class Fuentes extends CI_Controller {
 				$this->index();
 		}
 	}
+	public function carga(){
+		$myfile = fopen("./uploads/tmpfile.csv", "w") or die("Unable to open file!");
+		fwrite($myfile, urldecode($this->input->post('content')));
+		fclose($myfile);	
+		
+		$tablename  = $this->input->post('tablename');
+			$sql=	$this->loadcsv("./uploads/tmpfile.csv",$tablename);
+	}
 	private function loadcsv($file,$table){
 		$sql="";
 		$periodo  = $this->input->post('periodo');

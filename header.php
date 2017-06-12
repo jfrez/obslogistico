@@ -24,15 +24,14 @@
  
    <div class="header">
     
-           <div id="logo"><img src="/images/logo.png" width="200px" alt="Logo" /></div>
+           <div id="logo"><img src="/images/logo.png" width="150px" alt="Logo" /></div>
            
            <div class="top-nav">
                <ul>
-                   <li><a href="/" title="Dashboard" class="<?php if($active==1)echo "active"; ?>" ><img src="/images/icons/dashboard.png" alt="Dasboard" />Dashboard</a></li><!--Add "active" Class for Current Page-->
-                   <li><a href="/?/Base" class="<?php if($active==2)echo "active"; ?>" title="Forms" ><img src="/images/icons/form.png" alt="Forms" />Editar Base</a></li>
+                   <li><a href="/" title="KPI" class="<?php if($active==1)echo "active"; ?>" ><img src="/images/icons/dashboard.png" alt="Dasboard" />Kpi</a></li><!--Add "active" Class for Current Page-->
+                   <li><a href="/?/Prep" class="<?php if($active==2)echo "active"; ?>" title="Forms" ><img src="/images/icons/form.png" alt="Forms" />Preparaci&oacute;n</a></li>
                    <li><a href="/?/Fuentes" class="<?php if($active==3)echo "active"; ?> " title="Elements" ><img src="/images/icons/elements.png" alt="Elements" />Carga</a></li>
-                   <li><a href="/?/Links" class="<?php if($active==4)echo "active"; ?>" title="Plugins" ><img src="/images/icons/plugins.png" alt="Plugins" />Links</a></li>
-                   <li><a href="/?/Config" class="<?php if($active==5)echo "active"; ?>" title="Additional Elements" ><img src="/images/icons/settings.png" alt="Additional" />Preferencias</a></li>
+                   <li><a href="/?/Base" class="<?php if($active==5)echo "active"; ?>" title="Additional Elements" ><img src="/images/icons/settings.png" alt="Additional" />Base</a></li>
                </ul>
            </div>
     
