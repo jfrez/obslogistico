@@ -2,15 +2,84 @@
 $active=2;
 include_once("header.php");
 ?>
+<link rel="stylesheet" href="/css//bootstrap-tagsinput.css">
 <style>
 body {
     margin: 0;
 }
 </style>
 <!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap-theme.min.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rainbow/1.2.0/themes/github.css">
 <style>
+.icon-github {
+    background: no-repeat url('../img/github-16px.png');
+    width: 16px;
+    height: 16px;
+}
+
+.bootstrap-tagsinput {
+    width: 100%;
+}
+
+.accordion {
+    margin-bottom:-3px;
+}
+
+.accordion-group {
+    border: none;
+}
+
+.twitter-typeahead .tt-query,
+.twitter-typeahead .tt-hint {
+    margin-bottom: 0;
+}
+
+.twitter-typeahead .tt-hint
+{
+    display: none;
+}
+
+.tt-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    list-style: none;
+    font-size: 14px;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    background-clip: padding-box;
+    cursor: pointer;
+}
+
+.tt-suggestion {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: normal;
+    line-height: 1.428571429;
+    color: #333333;
+    white-space: nowrap;
+}
+
+.tt-suggestion:hover,
+.tt-suggestion:focus {
+  color: #ffffff;
+  text-decoration: none;
+  outline: 0;
+  background-color: #428bca;
+}
 .ExcelTable2007 {
 	border: 1px solid #B0CBEF;
 	border-width: 1px 0px 0px 1px;
@@ -62,31 +131,62 @@ div.well {
     overflow-x: auto;
     overflow-y: auto;
     white-space: nowrap;
-    max-height:90vh;
+    max-height:80vh;
 	padding:20px;
 }
 body {
     overflow:hidden;
 }
-textarea {
+textarea, textarea:focus {
     background-color: #000;
     border: 1px solid #000;
     color: #00ff00;
     padding: 8px;
+    font-size:14px;
     font-family: courier new;
+}
+.atributes{
+min-width:200px;
 }
 </style>
 <html><body>
-<div class="row">
+<div class="tabs-contenor">
+<div class="row" style="padding:5px;">
+    <div class="col-md-6 ">
+<h4 style="float:left;margin-right:20px;">Columnas:</h4>
+      <button onclick="app.removeCols()" type="button" class="btn btn-warning">Borrar</button>
+      <button onclick="app.addcol()" type="button" class="btn btn-success">Agregar</button>
+    </div>
+    <div class="col-md-6 ">
+<h4 style="float:left;margin-right:20px;">Filas:</h4>
+      <button onclick="app.removeRows()" type="button" class="btn btn-warning">Borrar</button>
+      <button onclick="app.addrow()" type="button" class="btn btn-success">Agregar</button>
+    </div>
+  </div>
+
+
+     </div>
+<div class="row" style="margin:10px;">
 <div class="col-md-8" >
         <div class="well" style="">
 
 <?php
 function dropdown($i){
-$dropdown ='<div class="dropdown"><button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">'.$i.'<span class="caret"></span></button>    <ul class="dropdown-menu">      <li><a href="#">Periodo</a></li>      <li><a href="#">Anno</a></li>      <li><a href="#">Pais</a></li><li><a href="#">Region</a></li><li><a href="#">Provincia</a></li><li><a href="#">Comuna</a></li>       </ul>  </div>';
+$dropdown ='<div class="dropdown pull-right"><button class="btn btn-xs btn-primary dropdown-toggle" type="button"  style="float:left;">Atributos<span class="caret"></span></button>    <ul class="dropdown-menu" style="min-width:200px;">      <li><a href="#">Periodo</a></li>      <li><a href="#">Anno</a></li>      <li><a href="#">Pais</a></li><li><a href="#">Region</a></li><li><a href="#">Provincia</a></li><li><a href="#">Comuna</a></li> <li>Atributos:<br/><input type="text" placeholder=""  id="atributes'.$i.'" class="form-control atributes" ></li>       </ul>  </div>';
 return $dropdown; 
 }
 
+function unidades($i){
+$dropdown ="<select class='unidades pull-right' style='float:left;'>
+  <option>Unidad</option>
+  <option>1</option>
+  <option>2</option>
+  <option>3</option>
+  <option>4</option>
+  <option>5</option>
+</select>";
+return $dropdown; 
+}
 $table = Array();
 $thead= "<table id='tabla' class='ExcelTable2007'><thead><th></th>\n\n";
 $f = fopen($file, "r");
@@ -108,7 +208,7 @@ while (($line = fgetcsv($f,0,';')) !== false) {
 }
 for($i=0;$i<$cols;$i++){
 if($i>0)
-$thead .= "<th id='col$i' class='cellcol".($i)."' ondblclick='app.editcol($i)'>".dropdown($i)."</th>";
+$thead .= "<th id='col$i' class='cellcol".($i)."' ondblclick='app.editcol($i)' style='min-width:100px;'><b style='font-size:19px;float:left;'>$i</b>".unidades($i)." ".dropdown($i)."</th>";
 else
 $thead .= "<th id='col$i' class='cellcol".($i)."' ondblclick='app.editcol($i)'>0</th>";
 }
@@ -126,23 +226,11 @@ echo $t;
 <div class="col-md-4" id="table">
 
 <div id="menucol" class="menu">
-<div class="row">
-    <div class="col-md-6 ">
-<h4 style="">Columnas:</h4>
-      <button onclick="app.removeCols()" type="button" class="btn btn-warning">Borrar</button>
-      <button onclick="app.addcol()" type="button" class="btn btn-success">Agregar</button>
-    </div>
-    <div class="col-md-6 ">
-<h4 style="">Filas:</h4>
-      <button onclick="app.removeRows()" type="button" class="btn btn-warning">Borrar</button>
-      <button onclick="app.addrow()" type="button" class="btn btn-success">Agregar</button>
-    </div>
-  </div>
-
 
 <form class="form-horizontal" method="POST">
 <input type='hidden' name='tablefile' value="<?php echo $file; ?>"/>
 <input type='hidden' name='tablename' value="<?php echo $tablename; ?>"/>
+<input type='text' name='prepname' class="form-control" value="<?php echo $tablename."_PREP"?>"/>
 <textarea rows=20  class="col-md-12" name="steps" id="steps">
 <?php
 if(isset($_POST['steps'])){
@@ -160,6 +248,8 @@ echo $_POST['steps'];
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="/js/table2CSV.js"></script>
 <script src="/js/preparation.js"></script>
+<script src="/js/bootstrap-tagsinput.min.js"></script>
+<script src="/js/typeahead.bundle.js"></script>
 <script>
 function CSV(){
  $table =$('#tabla');
@@ -176,7 +266,7 @@ function sendCSV(){
 		'method':'POST',
 		data:{'tablename':'<?php echo $tablename;?>',content:content,periodo:'periodo',periodoano:'anno'},
 		success:function(msg){
-		alert(msg);
+		location.href="/?/Fuentes/tmptable";
 		}
 
 		});
@@ -228,5 +318,42 @@ echo "app.editing=true;";
 }
 
 ?>
+$(function(){
+var atributes = new Bloodhound({
+  datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+  queryTokenizer: Bloodhound.tokenizers.whitespace,
+  prefetch: {
+    url: '/?/Prep/getAtributes',
+    filter: function(list) {
+      return $.map(list, function(attr) {
+        return { name: attr }; });
+    }
+  }
+});
+atributes.initialize();
+$('.atributes').tagsinput({
+allowDuplicates: false,freeInput: true,
+  typeaheadjs: {
+    name: 'name',
+    displayKey: 'name',
+    valueKey: 'name',
+    source: atributes.ttAdapter()
+  }
+});
 
+$('.dropdown-toggle').on('click', function (event) {
+    $(this).parent().toggleClass('open');
+});
+
+$('body').on('click', function (e) {
+    if (!$('.dropdown').is(e.target) 
+        && $('.dropdown').has(e.target).length === 0 
+        && $('.open').has(e.target).length === 0
+    ) {
+        $('.dropdown').removeClass('open');
+    }
+});
+
+
+});
 </script>

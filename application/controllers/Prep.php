@@ -31,6 +31,7 @@ class Prep extends CI_Controller {
 	{
 		$tablename  = $this->input->post('tablename');
 		$tablefile  = $this->input->post('tablefile');
+			$unidades = $this->db->query("Select name from SYS_Unidades")->result_array();
 		if(!isset($tablefile)){
 		$config['upload_path']          = './uploads/';
 		$config['allowed_types']        = 'csv';
@@ -51,13 +52,23 @@ class Prep extends CI_Controller {
 		{
 			$data = array('upload_data' => $this->upload->data());
 			$file= $data['upload_data']['full_path'];
-		$this->load->view('preparation',Array('file'=>$file,'tablename'=>$tablename));
+		$this->load->view('preparation',Array('file'=>$file,'tablename'=>$tablename,'unidades'=>$unidades));
 			
 		}
 		}else{
 
 
-		$this->load->view('preparation',Array('file'=>$tablefile,'tablename'=>$tablename));
+		$this->load->view('preparation',Array('file'=>$tablefile,'tablename'=>$tablename,'unidades'=>$unidades));
 		}
+	}
+	public function getAtributes(){
+			$q = $this->db->query("Select name from SYS_Atributos")->result_array();
+			$arr=Array();
+			foreach( $q as $a){
+			$arr[] = $a['name']; 
+			}
+			echo json_encode($arr);	
+
+
 	}
 }

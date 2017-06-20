@@ -12,7 +12,6 @@ body {
      </div>
 <div class="clear"></div>
   <div id="content">
-
 <form action="/?/Prep/do_upload" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 <h4>Cargar CSV a preprarar</h4>
 <input type="text" name="tablename" value="tmptable" class="input-text small input-error" />
@@ -22,6 +21,9 @@ body {
 <input type="submit" class="button" value="upload" />
 
 </form>
+
+
+
 </div>
 
 </div>

@@ -63,6 +63,13 @@ class Fuentes extends CI_Controller {
 		$q = $this->db->query("Show tables")->result_array();
 		$this->load->view('fuentes',Array('tables'=>$q));
 	}
+	public function tmptable()
+	{
+		$data = $this->db->query("select * from tmptable")->result_array();
+		$columns = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'tmptable'")->result_array();
+		$this->load->view('tabla',Array('table'=>$data,'cols'=>$columns));
+	}
+
 	public function do_upload()
 	{
 		$config['upload_path']          = './uploads/';
@@ -93,9 +100,9 @@ class Fuentes extends CI_Controller {
 		$myfile = fopen("./uploads/tmpfile.csv", "w") or die("Unable to open file!");
 		fwrite($myfile, urldecode($this->input->post('content')));
 		fclose($myfile);	
-		
+
 		$tablename  = $this->input->post('tablename');
-			$sql=	$this->loadcsv("./uploads/tmpfile.csv",$tablename);
+		$sql=	$this->loadcsv("./uploads/tmpfile.csv",$tablename);
 	}
 	private function loadcsv($file,$table){
 		$sql="";
@@ -179,20 +186,20 @@ class Fuentes extends CI_Controller {
 				      );
 			/*
 
-				CASOS:
-					1 Solo año: todo
-					2 periodo y año: listo
-					3 lugar - region: todo
-					4 lugar - provincia: todo
-					5 lugar - comuna: todo
-					6 lugar - pais: todo
+CASOS:
+1 Solo año: todo
+2 periodo y año: listo
+3 lugar - region: todo
+4 lugar - provincia: todo
+5 lugar - comuna: todo
+6 lugar - pais: todo
 
 
 
-			*/
+			 */
 
-				//CASO POR CASO SE AGREGAN LOS CAMPOS
-			if(strlen($periodo)>0 and strlen($periodoano)>0){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
+			//CASO POR CASO SE AGREGAN LOS CAMPOS
+			if(strlen($periodo)>0 and strlen($periodoano)>0 and isset($data[$periodo])){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
 
 				$p = $this->periodo($data[$periodo],$data[$periodoano]); // p contiene inicio,fin,final,print,campo
 
@@ -204,7 +211,7 @@ class Fuentes extends CI_Controller {
 				$SYS["SYS_PERIODO_INICIO"] = "'".$p['inicio']."'"; 
 				$SYS["SYS_PERIODO_FIN"] = "'".$p['fin']."'"; 
 			}
-			
+
 
 			$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")";
 
