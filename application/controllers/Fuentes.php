@@ -43,9 +43,28 @@ class Fuentes extends CI_Controller {
 		$d = DateTime::createFromFormat($format, $date);
 		return $d && $d->format($format) == $date;
 	}
+	private function region($region){
+		$region=	preg_replace("/[^A-Za-z0-9 ]/", '', $region);
+		$q = $this->db->query("Select SYS_REGION.original,SYS_REGION.final,SYS_geografico.SYS_REGION_PRINT  as print from SYS_REGION,SYS_geografico where SYS_REGION.final = SYS_geografico.SYS_REGION and SYS_REGION.original = '$region'")->result_array();
+	 		$row = $q[0];
+			return $row; 	
+	}
+	private function provincia($provincia){
+		$provincia=	preg_replace("/[^A-Za-z0-9 ]/", '', $provincia);
+		$q = $this->db->query("Select SYS_PROVINCIA.original,SYS_PROVINCIA.final,SYS_geografico.SYS_PROVINCIA_PRINT  as print from SYS_PROVINCIA,SYS_geografico where SYS_PROVINCIA.final = SYS_geografico.SYS_PROVINCIA and SYS_PROVINCIA.original = '$provincia'")->result_array();
+	 		$row = $q[0];
+			return $row; 	
+	}
+	private function comuna($comuna){
+		$comuna=	preg_replace("/[^A-Za-z0-9 ]/", '', $comuna);
+		$q = $this->db->query("Select SYS_COMUNA.original,SYS_COMUNA.final,SYS_geografico.SYS_COMUNA_PRINT  as print from SYS_COMUNA,SYS_geografico where SYS_COMUNA.final = SYS_geografico.SYS_COMUNA and SYS_COMUNA.original = '$comuna'")->result_array();
+	 		$row = $q[0];
+			return $row; 	
+	}
+
+
 	private function periodo($periodo=null,$anno = null){
 		$periodo=	preg_replace("/[^A-Za-z0-9 ]/", '', $periodo);
-
 		if($periodo  and $anno){
 			$q = $this->db->query("Select * from SYS_periodos where upper(original) = upper('$periodo')")->result_array();
 			foreach($q as $row){
@@ -56,6 +75,11 @@ class Fuentes extends CI_Controller {
 			}
 
 		}
+		if($anno and  !$periodo){
+				$inicio = $anno."-01-01";
+				$fin = $anno."-01-31";		
+				$p = Array('inicio'=>$inicio,'fin'=>$fin,'final'=>$anno,'print'=>$anno,'campo'=>"SYS_ANNO");
+		}
 		return $p;
 	}
 	public function index()
@@ -63,10 +87,10 @@ class Fuentes extends CI_Controller {
 		$q = $this->db->query("Show tables")->result_array();
 		$this->load->view('fuentes',Array('tables'=>$q));
 	}
-	public function tmptable()
+	public function tmptable($table)
 	{
-		$data = $this->db->query("select * from tmptable")->result_array();
-		$columns = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'tmptable'")->result_array();
+		$data = $this->db->query("select * from $table")->result_array();
+		$columns = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'$table'")->result_array();
 		$this->load->view('tabla',Array('table'=>$data,'cols'=>$columns));
 	}
 
@@ -106,10 +130,17 @@ class Fuentes extends CI_Controller {
 	}
 	private function loadcsv($file,$table){
 		$sql="";
-		$periodo  = $this->input->post('periodo');
+		$periodoi =null;
+		$periodoanoi=null;
+		$regioni=null;
+		$provinciai=null;
+		$comunai=null;
+		$region="region";
+		$provincia="provincia";
+		$comuna="comuna";
+		$periodo  = "periodo";
 		$datetime  = $this->input->post('datetime');
-		$ano  = $this->input->post('ano');
-		$periodoano  = $this->input->post('periodoano');
+		$periodoano  ="anno";;
 		// get structure from csv and insert db
 		ini_set('auto_detect_line_endings',TRUE);
 		$handle = fopen($file,'r');
@@ -126,7 +157,6 @@ class Fuentes extends CI_Controller {
 			if ($f) {
 				// normalize the field name, strip to 20 chars if too long
 				$f = substr(preg_replace ('/[^0-9a-z]/', '_', $f), 0, 20);
-
 				$field_count++;
 				$fields[] = $f;
 				$fieldtypes[] = " DOUBLE";
@@ -135,10 +165,19 @@ class Fuentes extends CI_Controller {
 						$datetime=$i;
 				if(strlen($periodo)>0)
 					if(strtoupper($periodo)==strtoupper($f))
-						$periodo=$i;
+						$periodoi=$i;
 				if(strlen($periodoano)>0)
 					if(strtoupper($periodoano)==strtoupper($f))
-						$periodoano=$i;
+						$periodoanoi=$i;
+				if(strlen($region)>0)
+					if(strtoupper($region)==strtoupper($f))
+						$regioni=$i;
+				if(strlen($provincia)>0)
+					if(strtoupper($provincia)==strtoupper($f))
+						$provinciai=$i;
+				if(strlen($comuna)>0)
+					if(strtoupper($comuna)==strtoupper($f))
+						$comunai=$i;
 			}
 		}
 		$realfields=Array();
@@ -149,6 +188,9 @@ class Fuentes extends CI_Controller {
 		while ( ($data = fgetcsv($handle,0,";") ) !== FALSE ) {
 			$fieldsi = array();
 			for($i=0;$i<$field_count; $i++) {
+				if($data[$i]==""){
+					$fieldsi[] ="NULL";
+				}else{
 				$d = tofloat($data[$i]);
 				if($d>0)$data[$i] = $d;
 				$fieldsi[] = '\''.addslashes($data[$i]).'\'';
@@ -158,6 +200,7 @@ class Fuentes extends CI_Controller {
 					$fieldtypes[$i] = " VARCHAR(255) ";
 				if($this->is_date($data[$i]))
 					$fieldtypes[$i] = " DATETIME ";
+			}
 			}
 
 
@@ -179,39 +222,60 @@ class Fuentes extends CI_Controller {
 					"SYS_MES_PRINT"=>"''",
 					"SYS_TRIMESTRE_PRINT"=>"''",
 					"SYS_TRIMESTRE_MOVIL_PRINT"=>"''",
-					"SYS_PAIS"=>"''",
+					"SYS_PAIS_PRINT"=>"''",
 					"SYS_REGION_PRINT"=>"''",
 					"SYS_PROVINCIA_PRINT"=>"''",
-					"SYS_COMUNA_PRINT"=>"''"
+					"SYS_COMUNA_PRINT"=>"''",
+					"SYS_ANNO_PRINT"=>"''"
 				      );
 			/*
 
 CASOS:
-1 Solo año: todo
+1 Solo año: listo
 2 periodo y año: listo
-3 lugar - region: todo
-4 lugar - provincia: todo
-5 lugar - comuna: todo
+3 lugar - region: listo
+4 lugar - provincia: listo
+5 lugar - comuna: listo
 6 lugar - pais: todo
 
 
-
 			 */
-
 			//CASO POR CASO SE AGREGAN LOS CAMPOS
-			if(strlen($periodo)>0 and strlen($periodoano)>0 and isset($data[$periodo])){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
+			if($periodoi!=null and $periodoanoi!==null and array_key_exists($periodoi,$data)){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
 
-				$p = $this->periodo($data[$periodo],$data[$periodoano]); // p contiene inicio,fin,final,print,campo
-
+				$p = $this->periodo($data[$periodoi],$data[$periodoanoi]); // p contiene inicio,fin,final,print,campo
 				$SYS[$p['campo']]="'".$p['final']."'"; //MIRA LA TABLA SYS_periodo
 				$PRINT[$p['campo']."_PRINT"]="'".$p['print']."'"; //MIRA LA TABLA SYS_periodo
 
-				$SYS["SYS_ANNO"]=$data[$periodoano];
+				$SYS["SYS_ANNO"]=$data[$periodoanoi];
+				$PRINT["SYS_ANNO_PRINT"]=$data[$periodoanoi];
 
 				$SYS["SYS_PERIODO_INICIO"] = "'".$p['inicio']."'"; 
 				$SYS["SYS_PERIODO_FIN"] = "'".$p['fin']."'"; 
+			}else if( $periodoanoi!==null and  $periodoi===null){
+				$p = $this->periodo(null,$data[$periodoanoi]); // p contiene inicio,fin,final,print,campo
+				$SYS[$p['campo']]="'".$p['final']."'"; //MIRA LA TABLA SYS_periodo
+				$PRINT[$p['campo']."_PRINT"]="'".$p['print']."'"; //MIRA LA TABLA SYS_periodo
+				$SYS["SYS_ANNO"]=$data[$periodoanoi];
+				$PRINT["SYS_ANNO_PRINT"]=$data[$periodoanoi];
+				$SYS["SYS_PERIODO_INICIO"] = "'".$p['inicio']."'"; 
+				$SYS["SYS_PERIODO_FIN"] = "'".$p['fin']."'"; 
 			}
-
+			if($regioni){
+				$p = $this->region($data[$regioni]);
+				$SYS["SYS_REGION"] = "'".$p['final']."'"; 
+				$PRINT["SYS_REGION_PRINT"] = "'".$p['print']."'"; 
+			}
+			if($provinciai){
+				$p = $this->provincia($data[$provinciai]);
+				$SYS["SYS_PROVINCIA"] = "'".$p['final']."'"; 
+				$PRINT["SYS_PROVINCIA_PRINT"] = "'".$p['print']."'"; 
+			}
+			if($comunai){
+				$p = $this->comuna($data[$comunai]);
+				$SYS["SYS_COMUNA"] = "'".$p['final']."'"; 
+				$PRINT["SYS_COMUNA_PRINT"] = "'".$p['print']."'"; 
+			}
 
 			$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")";
 
@@ -241,7 +305,8 @@ CASOS:
 				"SYS_PAIS_PRINT VARCHAR(255)",
 				"SYS_REGION_PRINT VARCHAR(255)",
 				"SYS_PROVINCIA_PRINT VARCHAR(255)",
-				"SYS_COMUNA_PRINT VARCHAR(255)"
+				"SYS_COMUNA_PRINT VARCHAR(255)",
+				"SYS_ANNO_PRINT VARCHAR(255)"
 			      );
 
 		$sqlcreate = "CREATE TABLE if not exists $table (" . implode(', ', $fields) . ",".implode(', ',$SYS).",".implode(',',$PRINT)." )";

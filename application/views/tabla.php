@@ -4,11 +4,11 @@ include_once("header.php");
 ?>
 <style>
 body {
-    margin: 0;
+
 }
 #content{
-overflow-x:auto;
-
+ position: absolute;
+  width: 30000px;
 }
 .ExcelTable2007 {
         border: 1px solid #B0CBEF;

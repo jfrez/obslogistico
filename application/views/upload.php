@@ -14,7 +14,13 @@ body {
   <div id="content">
 <form action="/?/Prep/do_upload" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 <h4>Cargar CSV a preprarar</h4>
-<input type="text" name="tablename" value="tmptable" class="input-text small input-error" />
+<input type="hidden" value="" id="steps" name="steps"/>
+<select name="tablename" class="input" id="prepname">
+<option value="Nueva">Nueva</option>
+<?php foreach($prep as $p){?>
+<option value="<?php echo $p['name']?>"><?php echo $p['name']?></option>
+<?php } ?>
+</select>
 <input  class="input-text small"  type="file" name="userfile" size="20" />
 
 
@@ -27,5 +33,27 @@ body {
 </div>
 
 </div>
+<script>
+function getCode(prep){
+	$.ajax({
+			url:'/?/Prep/getPreparationsCode/'+prep,
+			dataType:"json",
+			success:function(data){
+			console.log(data);
+			$("#steps").val(data[0].code);		
+
+			}
+			});
+}
+
+$("#prepname").change(function(){
+$( "#prepname option:selected" ).each(function() {
+      getCode($( this ).text());
+    });
+
+});
+
+</script>
+
 </body>
 </html>

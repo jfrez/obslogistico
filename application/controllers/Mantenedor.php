@@ -172,6 +172,25 @@ class Mantenedor extends CI_Controller {
 		}
 	}
 
+	public function Preparation()
+	{
+		try{
+			$crud = new grocery_CRUD();
+
+			$crud->set_theme('datatables');
+			$crud->set_table('SYS_PREPARATIONS');
+			$crud->set_subject('Preparacion');
+			$crud->required_fields('id');
+			$crud->columns('name','code');
+
+			$output = $crud->render();
+
+			$this->_example_output($output);
+
+		}catch(Exception $e){
+			show_error($e->getMessage().' --- '.$e->getTraceAsString());
+		}
+	}
 
 
 

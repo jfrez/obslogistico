@@ -25,11 +25,20 @@ class Prep extends CI_Controller {
 	}
 	public function index()
 	{
-		$this->load->view('upload');
+			$q1 = $this->db->query("SELECT DISTINCT name from SYS_PREPARATIONS")->result_array();
+		$this->load->view('upload',Array('prep'=>$q1));
 	}
 	public function do_upload()
 	{
 		$tablename  = $this->input->post('tablename');
+		$prepname  = $this->input->post('prepname');
+		$tablename=$prepname;	
+		$steps  = $this->input->post('steps');
+		if($steps!=""){
+		$this->db->query("INSERT INTO SYS_PREPARATIONS (name, code) VALUES('$prepname','$steps') ON DUPLICATE KEY UPDATE  code='$steps'");
+		}
+
+			$q1 = $this->db->query("SELECT DISTINCT name from SYS_PREPARATIONS")->result_array();
 		$tablefile  = $this->input->post('tablefile');
 			$unidades = $this->db->query("Select name from SYS_Unidades")->result_array();
 		if(!isset($tablefile)){
@@ -38,27 +47,28 @@ class Prep extends CI_Controller {
 		$config['max_size']             = 1000000;
 		$config['max_width']            = 1024;
 		$config['max_height']           = 768;
-
+		$config['overwrite'] = TRUE;
 		$this->load->library('upload', $config);
 		$tablename  = $this->input->post('tablename');
 		if ( ! $this->upload->do_upload('userfile'))
 		{
 			$q = $this->db->query("Show tables")->result_array();
 			$error = array('tables'=>$q,'error' => $this->upload->display_errors());
-
+			print_r($error);
 			$this->load->view('upload', $error);
 		}
 		else
 		{
 			$data = array('upload_data' => $this->upload->data());
 			$file= $data['upload_data']['full_path'];
-		$this->load->view('preparation',Array('file'=>$file,'tablename'=>$tablename,'unidades'=>$unidades));
+
+		$this->load->view('preparation',Array('file'=>$file,'tablename'=>$tablename,'unidades'=>$unidades,'preparations'=>$q1,'steps'=>$steps));
 			
 		}
 		}else{
 
 
-		$this->load->view('preparation',Array('file'=>$tablefile,'tablename'=>$tablename,'unidades'=>$unidades));
+		$this->load->view('preparation',Array('file'=>$tablefile,'tablename'=>$tablename,'unidades'=>$unidades,'preparations'=>$q1,'steps'=>$steps));
 		}
 	}
 	public function getAtributes(){
@@ -68,7 +78,24 @@ class Prep extends CI_Controller {
 			$arr[] = $a['name']; 
 			}
 			echo json_encode($arr);	
-
-
 	}
+	public function getPreparations(){
+			$q = $this->db->query("Select distinct name from SYS_PREPARATIONS")->result_array();
+			$arr=Array();
+			foreach( $q as $a){
+			$arr[] = $a['name']; 
+			}
+			echo json_encode($arr);	
+	}
+
+	public function getPreparationsCode($name){
+			$q = $this->db->query("Select code from SYS_PREPARATIONS where name = '$name'")->result_array();
+			echo json_encode($q);	
+	}
+	public function getTable($name){
+			$q = $this->db->query("Select * from $name ")->result_array();
+			echo json_encode($q);	
+	}
+
+
 }

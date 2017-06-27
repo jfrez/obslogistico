@@ -48,7 +48,15 @@ app.noedit = function(){
 app.edit = function(row,col){
 	app.noedit();
 	var val = $("#cell-"+row+"-"+col+" ").text();
-	$("#cell-"+row+"-"+col).html("<input onblur='app.noeditcell("+row+","+col+")' class='cell' id='input-"+row+"-"+col+"' value='"+val+"'/>");
+	$("#cell-"+row+"-"+col).html("<input maxlength='20' onblur='app.noeditcell("+row+","+col+")' class='cell' id='input-"+row+"-"+col+"' value='"+val+"'/>").focus();
+	$("#input-"+row+"-"+col).focus();
+$("#input-"+row+"-"+col).keypress(function(e) {
+    if(e.which == 13) {
+	$("#input-"+row+"-"+col).attr('onblur',"").unbind('onblur');
+	
+	app.noeditcell(row,col);
+    }
+});
 	app.editcelllist.push({row:row,col:col});
 };
 
@@ -129,7 +137,7 @@ app.removeRow = function(row){
 			$(".editrow"+index).removeClass("editrow"+index);
 			$("#rowindex"+index).html(nindex);
 			$("#rowindex"+index).attr("data-row",nindex);
-			$("#rowindex"+index).attr('ondblclick',"").unbind('click');
+			$("#rowindex"+index).attr('ondblclick',"").unbind('dblclick');
 			$("#rowindex"+index).attr('ondblclick',"app.editrow("+nindex+")");
 			$("#rowindex"+index).attr("id","rowindex"+nindex);
 			for(var i =0;i<cols;i++){
