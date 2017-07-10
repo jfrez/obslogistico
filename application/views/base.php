@@ -7,5 +7,17 @@ body {
     margin: 0;
 }
 </style>
-<iframe src="http://localhost/phpmyadmin/" style="border: 0; width: 100%; height: 100vh">Your browser doesn't support iFrames.</iframe>
+<?php
 
+foreach($tables as $n => $t){
+echo "<div class='tabla'>";
+echo "<h2>".$n."</h2>";
+foreach($t as $f){
+echo "<div class='field'>";
+print_r($f);
+echo "</div>";
+}
+echo "</div>";
+}
+
+?>
