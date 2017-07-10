@@ -20,9 +20,18 @@ class Base extends CI_Controller {
 	 */
 	public function index()
 	{
-		$this->load->view('base');
+		$q = $this->db->query("Show tables")->result_array();
+		$tables = Array();
+		foreach($q as $t){
+			$tname= $t['Tables_in_ObsLogistico'];
+			if(strpos($tname,"BASE_")===0){
+				$aux=$this->db->query("DESCRIBE $tname;")->result_array();
+				$tables[$tname] = $aux;
+			}
+		}
+		$this->load->view('base',Array('tables'=>$tables));
 	}
-	
 
-	
+
+
 }

@@ -10,10 +10,18 @@ margin: 0;
 }
 </style>
 <!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap-theme.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rainbow/1.2.0/themes/github.css">
+<link rel="stylesheet" href="/assets/google/css/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/google/css/bootstrap-theme.css">
+<link rel="stylesheet" href="/assets/google/css/todc-bootstrap.min.css">
+
 <style>
+.correct{
+background-color:rgb(144,238,144);
+}
+.error{
+background-color:rgb(250,128,144);
+}
 .icon-github {
 background: no-repeat url('../img/github-16px.png');
 width: 16px;
@@ -89,6 +97,7 @@ border: 1px solid #B0CBEF;
 	font-weight: 100;
 	border-spacing: 0px;
 	border-collapse: collapse;
+margin-left:0px;
 }
 
 .ExcelTable2007 TH {
@@ -132,8 +141,8 @@ div.well {
 	overflow-x: auto;
 	overflow-y: auto;
 	white-space: nowrap;
-	max-height:80vh;
-padding:20px;
+	max-height:86vh;
+padding:0px;
 }
 body {
 overflow:hidden;
@@ -151,6 +160,33 @@ padding: 8px;
 }
 .pull-right>.dropdown-menu {
     left: 0;
+}
+#showcode{
+}
+.inside{
+padding:0px;
+  -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+.well{
+padding:0px;
+margin:0px;
+}
+#code{
+  -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+td{
+  -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+
+
 }
 </style>
 <html><body>
@@ -171,7 +207,7 @@ padding: 8px;
 
 <form class="form-horizontal" method="POST">
 <div class="form-inline">
-<select name="prepname" class="form-control" id="prepname" style="float:left;">
+<!--<select name="prepname" disabled class="form-control" id="prepname" style="float:left;">
 <?php foreach($preparations as $p){
 if($p['name']!=$tablename){ ?>
 	<option value="<?php echo $p['name']?>"><?php echo $p['name']?></option>
@@ -179,9 +215,12 @@ if($p['name']!=$tablename){ ?>
 	<option selected value="<?php echo $p['name']?>"><?php echo $p['name']?></option>
 		<?php }} ?>
 		</select>
-<a href="#" style="" class="btn btn-info" onclick="CSV();">Descargar</a>
+-->
+<input type="hidden" name="prepname" value="<?=$tablename?>"/>
+		<input type="submit" value="Correr" class="btn btn-primary" style=""/>
+<a href="#" style="" class="btn btn-info" onclick="showcode();" id="showcode" style=""><img src="/assets/img/js.png"  width="20px"/><?php echo $tablename; ?></a>
 <a href="#" class="btn btn-warning pull-right" style="" onclick="sendCSV();">Cargar</a>
-		<input type="submit" value="Correr" class="btn btn-primary" style="float:left;margin-right:30px;"/>
+<a href="#" style="" class="btn btn-info pull-right" onclick="CSV();">Descargar</a>
 	
 
 </div>
@@ -190,8 +229,8 @@ if($p['name']!=$tablename){ ?>
 
 
 </div>
-<div class="row" style="margin:10px;">
-<div class="col-md-8" >
+<div class="row" style="margin:0px;">
+<div id="planilla" class="col-md-12 inside" style="margin:0px;padding:0x">
 <div class="well" style="">
 
 <?php
@@ -255,19 +294,20 @@ echo $t;
 
 </div>
 </div>
-<div class="col-md-4" id="table">
+<div id="code" class="col-md-0" >
 
 <div id="menucol" class="menu">
 
 <input type='hidden' name='tablefile' value="<?php echo $file; ?>"/>
 <input type='hidden' name='tablename' value="<?php echo $tablename; ?>"/>
-	<textarea rows=20  class="col-md-12" name="steps" id="steps">
+	<textarea rows=25  class="col-md-12" name="steps" id="steps">
 		<?php
 			echo $steps;
 ?>
 </textarea>
-		<textarea rows=10  class="col-md-12"  id="errors">
-</textarea>
+Errores:
+		<pre  class="col-md-12"  id="errors">
+</pre>
 </form>
 </div>
 </div>
@@ -276,9 +316,27 @@ echo $t;
 <script src="/js/table2CSV.js"></script>
 <script src="/js/preparation.js"></script>
 <script src="/js/validar.js"></script>
+<script src="/js/lib.js"></script>
 <script src="/js/bootstrap-tagsinput.min.js"></script>
 <script src="/js/typeahead.bundle.js"></script>
 <script>
+var codeopen = false;
+function showcode(){
+if(codeopen){
+codeopen=false;
+$("#code").removeClass("col-md-6");
+$("#code").addClass("col-md-0");
+$("#planilla").removeClass("col-md-6");
+$("#planilla").addClass("col-md-12");
+}else{
+codeopen=true;
+$("#code").removeClass("col-md-0");
+$("#code").addClass("col-md-6");
+$("#planilla").removeClass("col-md-12");
+$("#planilla").addClass("col-md-6");
+
+}
+}
 var atributes=Array();
 function loadattr(){
 	atributes=Array();
@@ -323,7 +381,7 @@ function sendCSV(){
 			'method':'POST',
 			data:{'tablename':'<?php echo "BASE_".$tablename;?>',content:content,periodo:'periodo',periodoano:'anno'},
 			success:function(msg){
-			//location.href="/?/Fuentes/tmptable/<?php echo "BASE_".$tablename;?>";
+		//	location.href="/?/Fuentes/tmptable/<?php echo "BASE_".$tablename;?>";
 			console.log(msg);
 			}
 
@@ -341,7 +399,7 @@ function addCommand(comm){
 	$("#steps").val($("#steps").val()+"\n"+comm);
 }
 function addError(row,col,type){
-	$("#errors").val($("#errors").val()+"\n"+"Row: "+row+" Col:"+col+", "+type);
+	$("#errors").html($("#errors").html()+"\n"+"Row: "+row+" Col:"+col+", "+type);
 
 }
 function addrow(){
@@ -397,7 +455,14 @@ switch(type) {
 if(isset($_POST['steps'])){
 	$code =trim(preg_replace('/\s\s+/', ' ', $_POST['steps']));
 	echo "app.editing=false;";
-	echo "eval('".$code."');";
+	echo "try {
+    eval('".$code."'); 
+} catch (e) {
+    if (e instanceof SyntaxError) {
+        addError(e.message);showcode();
+    }
+}";
+	//echo "eval('".$code."');";
 	echo "app.editing=true;";
 }
 
@@ -449,7 +514,189 @@ $('body').on('click', function (e) {
 		$('.dropdown').removeClass('open');
 		}
 		});
+$("#contextmenu").hide();
+});
 
+</script>
+<script type="text/javascript">
+var target=Array();
+var clip=Array();
+var selected=Array();
+        document.getElementById("tabla").addEventListener('contextmenu', function(e) {
+console.log(e);
+$("#contextmenu").css({left:e.pageX,top:e.pageY}).fadeIn();
+target=e.target;
+            e.preventDefault();
+        }, false);
+        document.addEventListener('click', function(e) {
+$("#contextmenu").fadeOut();
+	});
+        document.getElementById("tabla").addEventListener('click', function(e) {
+		});
+var downstart;
+var downend;
+var selecting=false;
+document.getElementById("tabla").addEventListener('mousedown', function(e) {
+if(e.which!=1)return;
+for(var e in selected){
+selected[e].removeClass("selected2");
+}
+selected=Array();
+
+downstart = e.target;
+selecting=true;
+});
+document.getElementById("tabla").addEventListener('mouseup', function(e) {
+if(e.which!=1)return;
+downend = e.target;
+selecting=false;
+console.log(downend);
+icol = parseInt($(downstart).attr("data-col"));
+irow = parseInt($(downstart).attr("data-row"));
+col = parseInt($(downend).attr("data-col"));
+row = parseInt($(downend).attr("data-row"));
+for(var j=irow;j<=row;j++){
+for(var i=icol;i<=col;i++){
+console.log($("#cell-"+j+"-"+i));
+$("#cell-"+j+"-"+i).addClass("selected2");
+selected.push($("#cell-"+j+"-"+i));
+}}
 
 });
+document.getElementById("tabla").addEventListener('mousemove', function(e) {
+if(e.which!=1)return;
+if(selecting){
+$(downstart).addClass("selected2");
+}
+});
+
+function copy(){
+clip=Array();
+text="";
+for(var s in selected){
+clip.push(selected[s]);
+text += selected[s].text()+",";
+}
+copyTextToClipboard(text);
+}
+function paste(){
+fcol = parseInt($(target).attr("data-col"));
+frow = parseInt($(target).attr("data-row"));
+diffcol = fcol-parseInt(clip[0].attr("data-col"));
+diffrow = frow-parseInt(clip[0].attr("data-row"));
+for(var c in clip){
+col = parseInt(clip[c].attr("data-col"))+diffcol;
+row = parseInt(clip[c].attr("data-row"))+diffrow;
+val=(clip[c].text());
+addCommand("setVal("+row+","+col+',"'+val+'");');
+$("#cell-"+row+"-"+col).text(val);
+
+}
+}
+
+
+
+function copyTextToClipboard(text) {
+  var textArea = document.createElement("textarea");
+  // Place in top-left corner of screen regardless of scroll position.
+  textArea.style.position = 'fixed';
+  textArea.style.top = 0;
+  textArea.style.left = 0;
+
+  // Ensure it has a small width and height. Setting to 1px / 1em
+  // doesn't work as this gives a negative w/h on some browsers.
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+
+  // We don't need padding, reducing the size if it does flash render.
+  textArea.style.padding = 0;
+
+  // Clean up any borders.
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+
+  // Avoid flash of white box if rendered for any reason.
+  textArea.style.background = 'transparent';
+
+
+  textArea.value = text;
+
+  document.body.appendChild(textArea);
+
+  textArea.select();
+
+  try {
+    var successful = document.execCommand('copy');
+    var msg = successful ? 'successful' : 'unsuccessful';
+    console.log('Copying text command was ' + msg);
+  } catch (err) {
+    console.log('Oops, unable to copy');
+  }
+
+  document.body.removeChild(textArea);
+}
+
 </script>
+<style>
+#contextmenu{
+position:absolute;
+max-width:200px;
+max-height:300px;
+width:auto;
+height:auto;
+z-index:99999;
+  padding: 12px 0;
+  width: 240px;
+  background-color: #fff;
+  border: solid 1px #dfdfdf;
+  box-shadow: 1px 1px 2px #cfcfcf;
+}
+.context-menu__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu__item {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.context-menu__item:last-child {
+  margin-bottom: 0;
+}
+
+.context-menu__link {
+  display: block;
+  padding: 4px 12px;
+  color: #0066aa;
+  text-decoration: none;
+}
+.selected2{
+  background-color: #87CEFA;
+}
+.context-menu__link:hover {
+  color: #fff;
+  background-color: #0066aa;
+}
+#planilla{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+</style>
+<div id="contextmenu">
+<ul class="context-menu__items">
+      <li class="context-menu__item">
+        <a href="#" onclick="copy()" class="context-menu__link" data-action="View"><i class="fa fa-eye"></i>Copiar</a>
+      </li>
+      <li class="context-menu__item">
+        <a href="#" onclick="paste()" class="context-menu__link" data-action="Edit"><i class="fa fa-edit"></i>Pegar</a>
+      </li>
+    </ul>
+</div>
+

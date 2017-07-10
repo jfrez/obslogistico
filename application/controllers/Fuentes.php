@@ -64,14 +64,16 @@ class Fuentes extends CI_Controller {
 
 
 	private function periodo($periodo=null,$anno = null){
-		$periodo=	preg_replace("/[^A-Za-z0-9 ]/", '', $periodo);
+		//$periodo=	preg_replace("/[^A-Za-z0-9 ]/", '', $periodo);
+		$p = Array();
 		if($periodo  and $anno){
 			$q = $this->db->query("Select * from SYS_periodos where upper(original) = upper('$periodo')")->result_array();
 			foreach($q as $row){
 				$inicio = $anno."-".$row['inicio']."-01";
+				if($row['fin']<$row['inicio'])$anno++;
 				$fin = $anno."-".$row['fin']."-01";		
-				$fin = date("Y-m-t", strtotime($fin) ) ;
-				$p = Array('inicio'=>$inicio,'fin'=>$fin,'final'=>$row['final'],'print'=>$row['print'],'campo'=>$row['campo']);
+				$fin = date("Y-m-t", strtotime($fin) );
+				$p[] = Array('inicio'=>$inicio,'fin'=>$fin,'final'=>$row['final'],'print'=>$row['print'],'campo'=>$row['campo']);
 			}
 
 		}
@@ -242,8 +244,10 @@ CASOS:
 			 */
 			//CASO POR CASO SE AGREGAN LOS CAMPOS
 			if($periodoi!=null and $periodoanoi!==null and array_key_exists($periodoi,$data)){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
-
-				$p = $this->periodo($data[$periodoi],$data[$periodoanoi]); // p contiene inicio,fin,final,print,campo
+			
+				$per = $this->periodo($data[$periodoi],$data[$periodoanoi]); // p contiene inicio,fin,final,print,campo
+				print_r($per);
+				foreach($per as $p){
 				$SYS[$p['campo']]="'".$p['final']."'"; //MIRA LA TABLA SYS_periodo
 				$PRINT[$p['campo']."_PRINT"]="'".$p['print']."'"; //MIRA LA TABLA SYS_periodo
 
@@ -252,6 +256,7 @@ CASOS:
 
 				$SYS["SYS_PERIODO_INICIO"] = "'".$p['inicio']."'"; 
 				$SYS["SYS_PERIODO_FIN"] = "'".$p['fin']."'"; 
+				}
 			}else if( $periodoanoi!==null and  $periodoi===null){
 				$p = $this->periodo(null,$data[$periodoanoi]); // p contiene inicio,fin,final,print,campo
 				$SYS[$p['campo']]="'".$p['final']."'"; //MIRA LA TABLA SYS_periodo
@@ -276,8 +281,13 @@ CASOS:
 				$SYS["SYS_COMUNA"] = "'".$p['final']."'"; 
 				$PRINT["SYS_COMUNA_PRINT"] = "'".$p['print']."'"; 
 			}
+			$updates=array();
+			for($i=1;$i<count($fields)-1;$i++){
+			array_push($updates,$fields[$i]." = ".$fieldsi[$i-1]."");
+			}
+			$duplicate = "ON DUPLICATE KEY UPDATE ".implode(', ',$updates);
 
-			$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")";
+			$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
 
 		}
 
@@ -285,18 +295,29 @@ CASOS:
 			$fields[$i+1] .= $fieldtypes[$i];
 		}
 
+		$KEY= Array(
+ 				"SYS_MES ",
+				"SYS_TRIMESTRE ",
+				"SYS_TRIMESTRE_MOVIL ",
+				"SYS_SEMESTRE ",
+				"SYS_ANNO ",
+				"SYS_REGION ",
+				"SYS_PROVINCIA ",
+				"SYS_COMUNA "
+			   );
+
 		$SYS= Array( 
-				"SYS_MES VARCHAR(255)",
-				"SYS_TRIMESTRE VARCHAR(255)",
-				"SYS_TRIMESTRE_MOVIL VARCHAR(255)",
-				"SYS_SEMESTRE VARCHAR(255)",
-				"SYS_ANNO VARCHAR(255)",
-				"SYS_PERIODO_INICIO DATETIME",
-				"SYS_PERIODO_FIN DATETIME",
-				"SYS_PAIS VARCHAR(255)",
-				"SYS_REGION VARCHAR(255)",
-				"SYS_PROVINCIA VARCHAR(255)",
-				"SYS_COMUNA VARCHAR(255)"
+				"SYS_MES VARCHAR(50)",
+				"SYS_TRIMESTRE VARCHAR(50)",
+				"SYS_TRIMESTRE_MOVIL VARCHAR(50)",
+				"SYS_SEMESTRE VARCHAR(50)",
+				"SYS_ANNO VARCHAR(5)",
+				"SYS_PERIODO_INICIO DATE",
+				"SYS_PERIODO_FIN DATE",
+				"SYS_PAIS VARCHAR(50)",
+				"SYS_REGION VARCHAR(50)",
+				"SYS_PROVINCIA VARCHAR(50)",
+				"SYS_COMUNA VARCHAR(50)"
 			   );
 		$PRINT = Array(
 				"SYS_MES_PRINT VARCHAR(255)",
@@ -313,12 +334,12 @@ CASOS:
 		if(sizeof($realfields>11)){
 			$realfields=array_slice($realfields,0,11);
 		}
-		$this->db->query("DROP TABLE IF EXISTS $table");
+		//$this->db->query("DROP TABLE IF EXISTS $table");
 		$this->db->query($sqlcreate);
 
 
-		//$unique = "ALTER TABLE $table ADD UNIQUE (".implode(", ",$realfields)."," .implode(', ',$SYS).",".implode(',',$PRINT)."  )";
-		//$this->db->query($unique);
+		$unique = "ALTER TABLE $table ADD UNIQUE (".implode(', ',$KEY)."  )";
+		$this->db->query($unique);
 
 
 		foreach($sql as $s)
