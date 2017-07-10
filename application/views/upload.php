@@ -15,8 +15,9 @@ body {
 <form action="/?/Prep/do_upload" enctype="multipart/form-data" method="post" accept-charset="utf-8">
 <h4>Cargar CSV a preprarar</h4>
 <input type="hidden" value="" id="steps" name="steps"/>
-<select name="tablename" class="input" id="prepname">
-<option value="Nueva">Nueva</option>
+<input  placeholder="Nombre de la tabla" value="" type="text" id="prepname" name="prepname"/>
+<select name="" class="input" id="select">
+<option value="Nueva">Nuevo</option>
 <?php foreach($prep as $p){?>
 <option value="<?php echo $p['name']?>"><?php echo $p['name']?></option>
 <?php } ?>
@@ -34,6 +35,9 @@ body {
 
 </div>
 <script>
+$(function(){
+
+});
 function getCode(prep){
 	$.ajax({
 			url:'/?/Prep/getPreparationsCode/'+prep,
@@ -46,9 +50,19 @@ function getCode(prep){
 			});
 }
 
-$("#prepname").change(function(){
-$( "#prepname option:selected" ).each(function() {
+$("#select").change(function(){
+$( "#select option:selected" ).each(function() {
+	if($(this).text()=="Nuevo"){
+	$("#prepname").val("");
+	$("#prepname").fadeIn();
+			$("#steps").val("");		
+	}else{
+	$("#prepname").fadeOut();
+	$("#prepname").val($(this).text());
       getCode($( this ).text());
+
+	}
+
     });
 
 });

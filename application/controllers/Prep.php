@@ -34,12 +34,9 @@ class Prep extends CI_Controller {
 		$prepname  = $this->input->post('prepname');
 		$tablename=$prepname;	
 		$steps  = $this->input->post('steps');
-		if($steps!=""){
-		$this->db->query("INSERT INTO SYS_PREPARATIONS (name, code) VALUES('$prepname','$steps') ON DUPLICATE KEY UPDATE  code='$steps'");
-		}
-
-			$q1 = $this->db->query("SELECT DISTINCT name from SYS_PREPARATIONS")->result_array();
 		$tablefile  = $this->input->post('tablefile');
+		$this->db->query("INSERT INTO SYS_PREPARATIONS (name, code) VALUES('$prepname','$steps') ON DUPLICATE KEY UPDATE  code='$steps'");
+			$q1 = $this->db->query("SELECT DISTINCT name from SYS_PREPARATIONS")->result_array();
 			$unidades = $this->db->query("Select name from SYS_Unidades")->result_array();
 		if(!isset($tablefile)){
 		$config['upload_path']          = './uploads/';
@@ -49,7 +46,6 @@ class Prep extends CI_Controller {
 		$config['max_height']           = 768;
 		$config['overwrite'] = TRUE;
 		$this->load->library('upload', $config);
-		$tablename  = $this->input->post('tablename');
 		if ( ! $this->upload->do_upload('userfile'))
 		{
 			$q = $this->db->query("Show tables")->result_array();
