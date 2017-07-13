@@ -26,12 +26,18 @@ class Base extends CI_Controller {
 			$tname= $t['Tables_in_ObsLogistico'];
 			if(strpos($tname,"BASE_")===0){
 				$aux=$this->db->query("DESCRIBE $tname;")->result_array();
-				$tables[$tname] = $aux;
-			}
+				$sql = array();
+				foreach($aux as $field){
+					$sql[] = "(SELECT count(DISTINCT ".$field['Field'].") FROM $tname) as ".$field['Field'];
+				}
+				$select = "select ".implode(", ",$sql);
+				$count = $this->db->query($select)->result_array();
+				$tables[$tname] = Array('desc'=>$aux,'count'=>$count);;
+				
 		}
-		$this->load->view('base',Array('tables'=>$tables));
 	}
-
+		$this->load->view('base',Array('tables'=>$tables));
+	}	
 
 
 }

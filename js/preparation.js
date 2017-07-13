@@ -1,3 +1,9 @@
+function dropdownizer(i){
+var txt = '<div class="dropdown pull-right"><button class="btn btn-xs myFakeClass btn-primary dropdown-toggle" type="button"  style="float:left;">Validador<span class="caret"></span></button><ul class="dropdown-menu" style="min-width:200px;"><li><a href="#" onclick="validar('+i+',\'numeric\')">Numerico</a></li><li><a href="#" onclick="validar('+i+',\'periodos\')">Periodo</a></li><li><a href="#" onclick="validar('+i+',\'anno\')">Anno</a></li> <li><a href="#" onclick="validar('+i+',\'PAIS_VIEW\')">Pais</a></li><li><a href="#" onclick="validar('+i+',\'REGION_VIEW\')">Region</a></li><li><a href="#" onclick="validar('+i+',\'PROVINCIA_VIEW\')" >Provincia</a></li><li><a href="#" onclick="validar('+i+',\'COMUNA_VIEW\')" >Comuna</a></li>  </ul>  </div>';
+
+var ret = "<b style='font-size:19px;float:left;'>"+i+"</b>"+txt;
+return ret;
+}
 String.prototype.replaceAll = function(search, replacement) {
     var target = this;
     return target.split(search).join(replacement);
@@ -7,10 +13,6 @@ app.editcelllist = [];
 app.editrowlist = [];
 app.editcollist = [];
 app.editing=true;
-function dropdownizer(i){
-dropdown ='<div class="dropdown"><button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">'+i+'<span class="caret"></span></button>    <ul class="dropdown-menu">      <li><a href="#">Per&iacute;odo</a></li>      <li><a href="#">A&ntilde;o</a></li>      <li><a href="#">Pa&iacute;s</a></li><li><a href="#">Regi&oacute;n</a></li><li><a href="#">Provincia</a></li><li><a href="#">Comuna</a></li>       </ul>  </div>';
-return dropdown;
-}
 
 
 app.removeRows= function(){
@@ -20,7 +22,23 @@ app.removeRows= function(){
 	}
 	app.editrowlist = [];
 }
+app.transpose= function(){
+ icol = parseInt($(downstart).attr("data-col"));
+                irow = parseInt($(downstart).attr("data-row"));
+                ecol = parseInt($(downend).attr("data-col"));
+                erow = parseInt($(downend).attr("data-row"));
+transpose(irow,icol,erow,ecol);
+addCommand("transpose("+irow+","+icol+","+erow+","+ecol+");");
+}
+app.crop= function(){
+ icol = parseInt($(downstart).attr("data-col"));
+                irow = parseInt($(downstart).attr("data-row"));
+                ecol = parseInt($(downend).attr("data-col"));
+                erow = parseInt($(downend).attr("data-row"));
+crop(irow,icol,erow,ecol);
+addCommand("crop("+irow+","+icol+","+erow+","+ecol+");");
 
+}
 app.removeCols= function(){
 	app.editcollist.sort(function(a, b){return b-a});
 
@@ -174,6 +192,7 @@ app.removeCol= function(col){
 	for(var i=1;i<=cols;i++){
 		if(i>=col){
 			newi=i-1;
+			if(newi>0){
 			$("#col"+i).css("background-color","inherit");
 			$("#col"+i).attr('ondblclick',"").unbind('click');
 			$("#col"+i).attr('ondblclick',"app.editcol("+newi+")");
@@ -190,10 +209,12 @@ app.removeCol= function(col){
 			$("#cell-"+j+"-"+i).attr("id","cell-"+j+"-"+newi);
 
 			}
+			}
 		}
 	}
 	for(var i=0;i<rlength;i++){
 		document.getElementById("tabla").rows[i].deleteCell(col);
 	}
+	
 
 }

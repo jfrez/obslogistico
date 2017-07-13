@@ -180,21 +180,24 @@ form.forgot_password{
 
 
 .header{
-	height:50px;
+	height:25px;
 	background: #54748e url(../images/header_bg.jpg) repeat-x;
 	border-bottom:1px solid #445c71;
 }
 
 
 #logo{
-	margin:0px 0px 0px 18px;
+	margin:0px 0px 0px 45%;
 	float:left;
 	top:0px;
+	position:absolute;
+	z-index:9999;
+	
 }
 
 
 .top-nav{
-	height:50px;
+	height:25px;
 	float:right;
 	margin:0px 20px 0px 0px;
 }
@@ -222,7 +225,7 @@ form.forgot_password{
 
 .top-nav li a{
 	padding:2px 0px 2px 0px;
-	height:38px;
+	height:20px;
 	float:left;
 	margin-right:40px;
 	color:#FFFFFF;
@@ -253,7 +256,7 @@ form.forgot_password{
 .tabs-contenor{
 	background: #eceef0;
 	border-bottom: 1px solid #b8bcc0;
-	height:50px;
+	height:25px;
 	padding:0px 10px 0px 20px;
 	position:relative;
 vertical-align: text-top;
@@ -1229,21 +1232,12 @@ color: #666452;
 }
 
 .information{
-background: #dbe3ff url('../images/icons/information.png');
-border-color: #a2b4ee;
-color: #585b66;
 }
 
 .success{
-background: #d5ffce url('../images/icons/tick.png');
-border-color: #9adf8f;
-color: #556652;
 }
 
 .error{
-background: #ffcece url('../images/icons/cross_circle.png');
-border-color: #df8f8f;
-color: #665252;
 }
 
 .help{

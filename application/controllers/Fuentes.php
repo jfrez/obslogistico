@@ -244,8 +244,9 @@ CASOS:
 			 */
 			//CASO POR CASO SE AGREGAN LOS CAMPOS
 			if($periodoi!=null and $periodoanoi!==null and array_key_exists($periodoi,$data)){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
-			
+echo "ANNO Y PERIODO";			
 				$per = $this->periodo($data[$periodoi],$data[$periodoanoi]); // p contiene inicio,fin,final,print,campo
+
 				print_r($per);
 				foreach($per as $p){
 				$SYS[$p['campo']]="'".$p['final']."'"; //MIRA LA TABLA SYS_periodo
@@ -288,7 +289,6 @@ CASOS:
 			$duplicate = "ON DUPLICATE KEY UPDATE ".implode(', ',$updates);
 
 			$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
-
 		}
 
 		for($i =0;$i<count($fieldtypes);$i++){

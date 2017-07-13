@@ -24,6 +24,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 $config['base_url'] = 'http://52.36.89.57/';
+$config['base_url'] = '';
 
 /*
 |--------------------------------------------------------------------------
