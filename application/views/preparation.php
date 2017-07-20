@@ -630,19 +630,33 @@ document.getElementById("well").addEventListener('mousedown', function(e) {
 	        $("[id^='rowindex'").removeClass("selected2");	
 	        $("[id^='cellcol'").removeClass("selected2");	
 		selected=Array();
-		app.editrowlist=Array();
-		app.editcollist=Array();
+		//app.editrowlist=Array();
+		//app.editcollist=Array();
 		downend=null;	
 		downstart = e.target;
 		$(downstart).addClass("selected2");
-		selecting=true;
 		});
 document.getElementById("well").addEventListener('mouseup', function(e) {
 	var onlycol=null;
 	var onlyrow=null;
+		app.editrowlist=Array();
+		app.editcollist=Array();
 		if(e.which!=1)return;
 		downend = e.target;
-			
+		icol = parseInt($(downstart).attr("data-col"));
+		irow = parseInt($(downstart).attr("data-row"));
+		col = parseInt($(e.target).attr("data-col"));
+		row = parseInt($(e.target).attr("data-row"));
+		if(isNaN(icol) && isNaN(col)){
+			for(var i =irow;i<=row;i++){
+			app.editrow(i);	
+			}
+		}
+		if(isNaN(irow) && isNaN(row)){
+			for(var i =icol;i<=col;i++){
+			app.editcol(i);
+			}
+		}	
 		});
 document.getElementById("well").addEventListener('mousemove', function(e) {
 		if(e.which!=1)return;
@@ -664,7 +678,6 @@ document.getElementById("well").addEventListener('mousemove', function(e) {
 		if(isNaN(icol) && isNaN(col)){
 			for(var i =irow;i<=row;i++){
 				$("#rowindex"+i).addClass("selected2");
-				app.editrow(i);
 			for(var j =1;j<getcols();j++){
 				$("#cell-"+i+"-"+j).addClass("selected2");
 				selected.push($("#cell-"+i+"-"+j));
@@ -674,7 +687,6 @@ document.getElementById("well").addEventListener('mousemove', function(e) {
 		if(isNaN(irow) && isNaN(row)){
 			for(var i =icol;i<=col;i++){
 				$("#col"+i).addClass("selected2");
-				app.editcol(i);
 			for(var j =1;j<getrows();j++){
 				$("#cell-"+j+"-"+i).addClass("selected2");
 				selected.push($("#cell-"+j+"-"+i));
