@@ -1,4 +1,3 @@
-
 <?php
 $active=2;
 include_once("header.php");
@@ -31,7 +30,6 @@ height: 16px;
 .bootstrap-tagsinput {
 width: 100%;
 }
-
 .accordion {
 	margin-bottom:-3px;
 }
@@ -175,6 +173,7 @@ transition: all 0.5s ease;
 padding:0px;
 margin:0px;
 }
+
 #code{
 	-webkit-transition: all 0.5s ease;
 	-moz-transition: all 0.5s ease;
@@ -189,21 +188,60 @@ transition: all 0.5s ease;
 
 
 }
+table{
+background:white;
+}
+th{
+background:lightgrey;
+}
+.rows{
+background:lightgrey;
+}
 .tabs-contenedor2{
 height:50px;
+}
+.columna{
+	-webkit-transition: all 0.30s ease-in-out;
+	-moz-transition: all 0.30s ease-in-out;
+	-ms-transition: all 0.30s ease-in-out;
+	-o-transition: all 0.30s ease-in-out;
+outline: none;
+	 box-sizing: border-box;
+	 -webkit-box-sizing: border-box;
+	 -moz-box-sizing: border-box;
+width: 200px;
+background: #fff;
+border: 1px solid #ccc;
+color: #555;
+padding:5px 12px;
+font: 13px Arial, Helvetica, sans-serif;
+}
+.columna:focus{
+background: #d2d9dd;
+}
+.btn2{
+box-shadow: 2px 2px 1px 0px rgba(0,0,0,0.75);
+}
+.btn2:active{
+box-shadow: none !important;
 }
 </style>
 <html><body>
 <div class="tabs-contenor2">
-<div class="row" style="padding:5px;">
+
+
+<div class="row" style="padding:3px;">
 <div class="col-md-8 ">
-<div style="float:left;margin-left:100px;">
-<button onclick="app.removeCols()" type="button" class="btn" style="padding:0px; margin-left:10px;" title="Eliminar Columna"><img width=25 src="/images/icons/delcol.png"/></button>
-<button onclick="app.addcol()" type="button" class="btn" title="Agregar Columna" style="margin-left:10px;padding:0px"><img width=25 src="/images/icons/addcol.png"/></button>
-<button onclick="app.removeRows()" type="button" class="btn" title="Eliminar Fila" style="margin-left:10px;padding:0px"><img width=25 src="/images/icons/delrow.png"/></button>
-<button onclick="app.addrow()" type="button" class="btn" title="Agregar Fila" style="margin-left:10px;padding:0px"><img width=25 src="/images/icons/addrow.png"/></button>
-<button onclick="app.transpose()" type="button" class="btn" title="Rotar" style="margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/transpose.png"/></button>
-<button onclick="app.crop()" type="button" class="btn" title="Cortar" style="margin-left:10px;padding:0px"><img width=20 src="/images/icons/crop.png"/></button>
+<div style="float:left;margin-left:10px;">
+<button onclick="app.undo()" type="button" class="btn btn2" style="background:white;padding:0px; margin-left:10px;" title="Eliminar Columna"><img width=25 src="/images/icons/undo.png"/></button>
+<button onclick="app.removeCols()" type="button" class="btn btn2" style="padding:0px; margin-left:10px;" title="Eliminar Columna"><img width=25 src="/images/icons/delcol.png"/></button>
+<button onclick="app.addcol()" type="button" class="btn btn2" title="Agregar Columna" style="margin-left:10px;padding:0px"><img width=25 src="/images/icons/addcol.png"/></button>
+<button onclick="app.removeRows()" type="button" class="btn btn2" title="Eliminar Fila" style="margin-left:10px;padding:0px"><img width=25 src="/images/icons/delrow.png"/></button>
+<button onclick="app.addrow()" type="button" class="btn btn2" title="Agregar Fila" style="margin-left:10px;padding:0px"><img width=25 src="/images/icons/addrow.png"/></button>
+<button onclick="app.transpose()" type="button" class="btn btn2" title="Rotar" style="margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/transpose.png"/></button>
+<button onclick="app.crop()" type="button" class="btn btn2" title="Cortar" style="margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/crop.png"/></button>
+<button onclick="app.complete()" type="button" class="btn btn2" title="Cortar" style="margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/fill.png"/></button>
+<button onclick="app.replace2()" type="button" class="btn btn2" title="Cortar" style="margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/replace.png"/></button>
 </div>
 </div>
 <div class="col-md-4 ">
@@ -222,8 +260,8 @@ height:50px;
 					<input type="hidden" name="prepname" value="<?=$tablename?>"/>
 					<input type="submit" value="Correr" class="btn btn-primary" style=""/>
 					<a href="#" style="" class="btn btn-info" onclick="showcode();" id="showcode" style=""><img src="/assets/img/js.png"  width="20px"/><?php echo $tablename; ?></a>
-					<a href="#" class="btn btn-warning pull-right" style="" onclick="sendCSV();">Cargar</a>
 					<a href="#" style="" class="btn btn-info pull-right" onclick="CSV();">Descargar</a>
+<a href="#" class="btn btn-warning pull-right" style="" onclick="sendCSV();">Cargar</a>
 
 
 					</div>
@@ -232,9 +270,9 @@ height:50px;
 
 
 					</div>
-					<div class="row" style="margin:0px;">
+					<div class="row bigbox"  style="margin-top:5px;margin-left:0px;">
 					<div id="planilla" class="col-md-12 inside" style="margin:0px;padding:0x">
-					<div class="well" style="">
+					<div class="well" id="well" style="">
 					<?php
 					function dropdown($i){
 						$dropdown ='<div class="dropdown pull-right">
@@ -280,7 +318,7 @@ while (($line = fgetcsv($f,0,';')) !== false) {
 }
 for($i=0;$i<$cols;$i++){
 	if($i>0)
-		$thead .= "<th id='col$i' class='cellcol".($i)."' ondblclick='app.editcol($i)' style='min-width:100px;'><b style='font-size:19px;float:left;'>$i</b> ".dropdown($i)."</th>";
+		$thead .= "<th id='col$i' data-col='".$i."' class='cellcol".($i)."' ondblclick='app.editcol($i)' style='min-width:100px;'><b style='font-size:19px;float:left;'>$i</b> ".dropdown($i)."</th>";
 	else
 		$thead .= "<th id='col$i' class='cellcol".($i)."' ondblclick='app.editcol($i)'>0</th>";
 }
@@ -380,9 +418,9 @@ function sendCSV(){
 	$.ajax({
 			'url':"/?/Fuentes/carga",
 			'method':'POST',
-			data:{'tablename':'<?php echo "BASE_".$tablename;?>',content:content,periodo:'periodo',periodoano:'anno'},
+			data:{'tablename':'<?php echo "BASE_".$tablename;?>',content:content,periodo:'periodo',periodoano:'anno',columna:$("#columna").val()},
 			success:function(msg){
-				location.href="/?/Base/";
+			location.href="/?/Base/";
 			console.log(msg);
 			},
 error:function(msg){
@@ -415,21 +453,27 @@ function addError(row,col,type){
 
 }
 function addrow(){
+app.store();
 	app.addrow();
 }
 function addcol(){
+app.store();
 	app.addcol();
 }
 function delCol(col){
+app.store();
 	app.removeCol(col);
 }
 function delRow(row){
+app.store();
 	app.removeRow(row);
 }
 function setVal(row,col,val){
+app.store();
 	app.setVal(row,col,val);
 }
 function replace(row,col,val,val2){
+app.store();
 	app.replace(row,col,val,val2);
 }
 function getVal(row,col){
@@ -534,7 +578,7 @@ $("#contextmenu").hide();
 var target=Array();
 var clip=Array();
 var selected=Array();
-document.getElementById("tabla").addEventListener('contextmenu', function(e) {
+document.getElementById("well").addEventListener('contextmenu', function(e) {
 		console.log(e);
 		$("#contextmenu").css({left:e.pageX,top:e.pageY}).fadeIn();
 		target=e.target;
@@ -543,41 +587,113 @@ document.getElementById("tabla").addEventListener('contextmenu', function(e) {
 document.addEventListener('click', function(e) {
 		$("#contextmenu").fadeOut();
 		});
-document.getElementById("tabla").addEventListener('click', function(e) {
+document.getElementById("well").addEventListener('click', function(e) {
+if(downstart==downend){
+selected=Array();
+
+		icol = parseInt($(downstart).attr("data-col"));
+		irow = parseInt($(downstart).attr("data-row"));
+		col = parseInt($(e.target).attr("data-col"));
+		row = parseInt($(e.target).attr("data-row"));
+if(isNaN(icol) && isNaN(col)){
+		for(var i =irow;i<=row;i++){
+			app.editrow(i);	
+			$("#rowindex"+i).addClass("selected2");
+		for(var j =1;j<getcols();j++){
+				$("#cell-"+i+"-"+j).addClass("selected2");
+				selected.push($("#cell-"+i+"-"+j));
+			}
+			}
+		}else
+		if(isNaN(irow) && isNaN(row)){
+			for(var i =icol;i<=col;i++){
+				app.editcol(i);	
+				$("#col"+i).addClass("selected2");
+			for(var j =1;j<getrows();j++){
+				$("#cell-"+j+"-"+i).addClass("selected2");
+				selected.push($("#cell-"+j+"-"+i));
+			}
+			}
+		}else{		
+selected.push($(e.target));
+}
+}
+		selecting=false;
 		});
 var downstart;
 var downend;
 var selecting=false;
-document.getElementById("tabla").addEventListener('mousedown', function(e) {
+document.getElementById("well").addEventListener('mousedown', function(e) {
+		selecting=true;
 		if(e.which!=1)return;
-		for(var e in selected){
-		selected[e].removeClass("selected2");
-		}
+	        $(".selected2").removeClass("selected2");	
+	        $("[id^='rowindex'").removeClass("selected2");	
+	        $("[id^='cellcol'").removeClass("selected2");	
 		selected=Array();
+		app.editrowlist=Array();
+		app.editcollist=Array();
 		downend=null;	
 		downstart = e.target;
+		$(downstart).addClass("selected2");
 		selecting=true;
 		});
-document.getElementById("tabla").addEventListener('mouseup', function(e) {
+document.getElementById("well").addEventListener('mouseup', function(e) {
+	var onlycol=null;
+	var onlyrow=null;
 		if(e.which!=1)return;
 		downend = e.target;
-		selecting=false;
-		console.log(downend);
-		icol = parseInt($(downstart).attr("data-col"));
-		irow = parseInt($(downstart).attr("data-row"));
-		col = parseInt($(downend).attr("data-col"));
-		row = parseInt($(downend).attr("data-row"));
-		for(var j=irow;j<=row;j++){
-		for(var i=icol;i<=col;i++){
-		$("#cell-"+j+"-"+i).addClass("selected2");
-		selected.push($("#cell-"+j+"-"+i));
-		}}
-
+			
 		});
-document.getElementById("tabla").addEventListener('mousemove', function(e) {
+document.getElementById("well").addEventListener('mousemove', function(e) {
 		if(e.which!=1)return;
 		if(selecting){
-		$(downstart).addClass("selected2");
+		selected=Array();
+		$(".selected2").removeClass("selected2");
+		icol = parseInt($(downstart).attr("data-col"));
+		irow = parseInt($(downstart).attr("data-row"));
+		col = parseInt($(e.target).attr("data-col"));
+		row = parseInt($(e.target).attr("data-row"));
+		for(var j=irow;j<=row;j++){
+		if(j>0)
+		for(var i=icol;i<=col;i++){
+		if(i>0){
+		$("#cell-"+j+"-"+i).addClass("selected2");
+		selected.push($("#cell-"+j+"-"+i));
+		}
+		}}
+		if(isNaN(icol) && isNaN(col)){
+			for(var i =irow;i<=row;i++){
+				$("#rowindex"+i).addClass("selected2");
+				app.editrow(i);
+			for(var j =1;j<getcols();j++){
+				$("#cell-"+i+"-"+j).addClass("selected2");
+				selected.push($("#cell-"+i+"-"+j));
+			}
+			}
+		}
+		if(isNaN(irow) && isNaN(row)){
+			for(var i =icol;i<=col;i++){
+				$("#col"+i).addClass("selected2");
+				app.editcol(i);
+			for(var j =1;j<getrows();j++){
+				$("#cell-"+j+"-"+i).addClass("selected2");
+				selected.push($("#cell-"+j+"-"+i));
+			}
+			}
+		}			
+if(Math.abs(e.clientX - $(window).width())<50){
+document.getElementById("well").scrollLeft+=5;
+}
+if(Math.abs(e.clientY - $(window).height())<50){
+document.getElementById("well").scrollTop+=5;
+}
+if(Math.abs(e.clientX)<50){
+document.getElementById("well").scrollLeft-=5;
+}
+if(Math.abs(e.clientY-$("#well").offset().top)<50){
+document.getElementById("well").scrollTop-=5;
+}
+
 		}
 		});
 

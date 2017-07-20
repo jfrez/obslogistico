@@ -23,10 +23,8 @@ validador.exec=function(col,tabla){
 			  }
 			if(rowerror){
 			  addError(i,col,tabla);	
-			  $("#cell-"+i+"-"+col).css({"background-color":"#FA8072"});
 			  $("#cell-"+i+"-"+col).addClass("error");
 			}else{
-			  $("#cell-"+i+"-"+col).css({"background-color":"#90EE90"});
 			  $("#cell-"+i+"-"+col).addClass("correct");
 			}
 			}

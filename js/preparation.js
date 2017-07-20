@@ -13,9 +13,22 @@ app.editcelllist = [];
 app.editrowlist = [];
 app.editcollist = [];
 app.editing=true;
-
-
+app.tabledata = [];
+app.store = function(){
+if(document.getElementById('well').innerHTML!=app.tabledata[app.tabledata.length-1])
+app.tabledata.push(document.getElementById('well').innerHTML);
+}
+app.undo =function(){
+document.getElementById('well').innerHTML=app.tabledata.pop();
+$(".dropdown-menu li a").click(function() {
+                                $(this).closest(".dropdown-menu").prev().click();;
+                                });
+$('.dropdown-toggle').on('click', function (event) {
+                $(this).parent().toggleClass('open');
+                });
+}
 app.removeRows= function(){
+app.store();
 	app.editrowlist.sort(function(a, b){return b-a});
 	for(var e in app.editrowlist){
 		app.removeRow(app.editrowlist[e]);
@@ -23,6 +36,7 @@ app.removeRows= function(){
 	app.editrowlist = [];
 }
 app.transpose= function(){
+app.store();
  icol = parseInt($(downstart).attr("data-col"));
                 irow = parseInt($(downstart).attr("data-row"));
                 ecol = parseInt($(downend).attr("data-col"));
@@ -31,6 +45,7 @@ transpose(irow,icol,erow,ecol);
 addCommand("transpose("+irow+","+icol+","+erow+","+ecol+");");
 }
 app.crop= function(){
+app.store();
  icol = parseInt($(downstart).attr("data-col"));
                 irow = parseInt($(downstart).attr("data-row"));
                 ecol = parseInt($(downend).attr("data-col"));
@@ -40,6 +55,7 @@ addCommand("crop("+irow+","+icol+","+erow+","+ecol+");");
 
 }
 app.removeCols= function(){
+app.store();
 	app.editcollist.sort(function(a, b){return b-a});
 
 	for(var e in app.editcollist){
@@ -82,6 +98,7 @@ app.noeditcell= function(row,col){
 	app.setVal(row,col,$("#input-"+row+"-"+col).val());
 }
 app.setVal= function(row,col,val){
+app.store();
 	if(app.editing)addCommand("setVal("+row+","+col+',"'+val+'");');
 	$("#cell-"+row+"-"+col).html(val);
 }
@@ -89,6 +106,7 @@ app.getVal= function(row,col){
 	return $("#cell-"+row+"-"+col).html();
 }
 app.replace= function(row,col,val,val2){
+app.store();
 	if(app.editing)addCommand("replace("+row+","+col+',"'+val+'","'+val2+'");');
 	text=$("#cell-"+row+"-"+col).html();
 	text = text.replaceAll(val,val2);
@@ -96,6 +114,7 @@ app.replace= function(row,col,val,val2){
 }
 
 app.addrow = function(){
+app.store();
 	 if(app.editing)addCommand("addrow();");
 	rows = document.getElementById("tabla").rows.length;
 	cols=document.getElementById("tabla").rows[0].cells.length
@@ -118,6 +137,7 @@ app.addrow = function(){
 	}
 }
 app.addcol= function(){
+app.store();
 	 if(app.editing)addCommand("addcol();");
 	rows = document.getElementById("tabla").rows.length;
 	cols=document.getElementById("tabla").rows[0].cells.length;
@@ -139,13 +159,15 @@ app.addcol= function(){
 app.editrow = function(row){
 	if(app.editrowlist.indexOf(row)>-1){
 		app.editrowlist.splice(app.editrowlist.indexOf(row),1);
-		$("#row"+row).css("background-color","inherit");
 	}else{
-		$("#row"+row).css("background-color","#716D67");
+		for(var i = 0;i<getcols();i++){
+		selected.push($("#cell-"+row+"-"+i));
+		}
 		app.editrowlist.push(row);
 	}
 }
 app.removeRow = function(row){
+app.store();
 	 if(app.editing)addCommand("delRow("+row+");");
 	$(".row").each(function(index){
 			if(index>row){
@@ -178,14 +200,13 @@ app.removeRow = function(row){
 }
 app.editcol = function(col){
 	if(app.editcollist.indexOf(col)>-1){
-		$(".cellcol"+col).css("background-color","inherit");
 		app.editcollist.splice(app.editcollist.indexOf(col),1);
 	}else{
-		$(".cellcol"+col).css("background-color","#716D67");
 		app.editcollist.push(col);
 	}
 }
 app.removeCol= function(col){
+app.store();
 	 if(app.editing)addCommand("delCol("+col+");");
 	rlength= document.getElementById("tabla").rows.length;
 	var cols = document.getElementById("tabla").rows[0].cells.length;
@@ -193,12 +214,13 @@ app.removeCol= function(col){
 		if(i>=col){
 			newi=i-1;
 			if(newi>0){
-			$("#col"+i).css("background-color","inherit");
+			$("#col"+i).css("background-color","lightgrey");
 			$("#col"+i).attr('ondblclick',"").unbind('click');
 			$("#col"+i).attr('ondblclick',"app.editcol("+newi+")");
 			$("#col"+i).addClass("cellcol"+newi);
 			$("#col"+i).removeClass("cellcol"+i);
 			$("#col"+i).html(dropdownizer(newi));
+			$("#col"+i).attr("data-col",newi);
 			$("#col"+i).attr('id',"col"+newi);
 			for(var j=0;j<rlength;j++){
 			$("#cell-"+j+"-"+i).attr("data-col",newi);
@@ -215,6 +237,8 @@ app.removeCol= function(col){
 	for(var i=0;i<rlength;i++){
 		document.getElementById("tabla").rows[i].deleteCell(col);
 	}
-	
+$('.dropdown-toggle').on('click', function (event) {
+                $(this).parent().toggleClass('open');
+                });	
 
 }

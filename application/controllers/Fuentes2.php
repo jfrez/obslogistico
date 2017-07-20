@@ -286,6 +286,7 @@ CASOS:
 			for($i=1;$i<count($fields)-1;$i++){
 				array_push($updates,$fields[$i]." = ".$fieldsi[$i-1]."");
 			}
+			$duplicate = "ON DUPLICATE KEY UPDATE ".implode(', ',$updates);
 
 			if(strlen($columna)>0){
 				foreach($fieldsi as $k =>$value){
@@ -294,14 +295,13 @@ CASOS:
 					echo $colname;
 					if(!in_array($colname,array("anno","periodo","lat","lng","lugar","region","comuna","provincia"))){
 							$duplicate = "ON DUPLICATE KEY UPDATE value = $value";
-							$sql[] = "Insert ignore into  $table"."_"."$columna values(NULL,'$colname',$value,".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
+							$sql[] = "Insert ignore into  $table values(NULL,'$colname',$value,".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
 							}
 							}
 					echo "<br>";
-							}
-			$duplicate = "ON DUPLICATE KEY UPDATE ".implode(', ',$updates);
+							}else{
 							$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
-							
+							}
 							}
 
 							for($i =0;$i<count($fieldtypes);$i++){
@@ -343,12 +343,10 @@ CASOS:
 									"SYS_ANNO_PRINT VARCHAR(255)"
 								      );
 							if(strlen($columna)>0){
-								$sqlcreate = "CREATE TABLE if not exists $table"."_"."$columna (id Integer PRIMARY KEY AUTO_INCREMENT,$columna VARCHAR(50),value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
-							$this->db->query($sqlcreate);
-							}
+								$sqlcreate = "CREATE TABLE if not exists $table (id Integer PRIMARY KEY AUTO_INCREMENT,$columna VARCHAR(50),value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
+							}else{
 								$sqlcreate = "CREATE TABLE if not exists $table (" . implode(', ', $fields) . ",".implode(', ',$SYS).",".implode(',',$PRINT)." )";
-							$this->db->query($sqlcreate);
-							
+							}
 							if(sizeof($realfields>11)){
 								$realfields=array_slice($realfields,0,11);
 							}
@@ -357,11 +355,11 @@ CASOS:
 
 
 							if(strlen($columna)>0){
-							$unique = "ALTER TABLE $table"."_"."$columna ADD UNIQUE ($columna,".implode(', ',$KEY)."  )";
-							$this->db->query($unique);
+							$unique = "ALTER TABLE $table ADD UNIQUE ($columna,".implode(', ',$KEY)."  )";
 
-							}
+							}else{
 							$unique = "ALTER TABLE $table ADD UNIQUE (".implode(', ',$KEY)."  )";
+							}
 							$this->db->query($unique);
 
 

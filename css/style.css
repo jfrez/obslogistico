@@ -1,6 +1,8 @@
 @charset "utf-8";
-
-
+.tabs-contenor2{
+box-shadow:         0px 5px 5px 0px rgba(52, 158, 225, 0.73);
+z-index:99999;
+}
 
 .p-line{
     text-align:center;

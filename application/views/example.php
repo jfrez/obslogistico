@@ -18,6 +18,7 @@ body {
 		<a class="button" href='<?php echo site_url('Mantenedor/pais')?>'>Pais</a> |
 		<a class="button" href='<?php echo site_url('Mantenedor/Unidad')?>'>Unidad</a> 
 		<a class="button" href='<?php echo site_url('Mantenedor/Preparation')?>'>Preparaciones</a> 
+		<a class="button" href='<?php echo site_url('Mantenedor/Lugar')?>'>Lugar</a> 
 	
 	</div>
   <div id="content">

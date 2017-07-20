@@ -191,6 +191,25 @@ class Mantenedor extends CI_Controller {
 			show_error($e->getMessage().' --- '.$e->getTraceAsString());
 		}
 	}
+	public function Lugar()
+	{
+		try{
+			$crud = new grocery_CRUD();
+
+			$crud->set_theme('datatables');
+			$crud->set_table('SYS_LUGAR');
+			$crud->set_subject('Lugar');
+			$crud->required_fields('id');
+			$crud->columns('SYS_LUGAR','SYS_LAT','SYS_LNG');
+
+			$output = $crud->render();
+
+			$this->_example_output($output);
+
+		}catch(Exception $e){
+			show_error($e->getMessage().' --- '.$e->getTraceAsString());
+		}
+	}
 
 
 

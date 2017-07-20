@@ -1,4 +1,5 @@
 function completeCol(col,startrow){
+app.store();
 	var anno=getVal(startrow,col);
 	for(i=startrow+1;i<getrows();i++){
 		if(getVal(i,col).length>0){
@@ -10,11 +11,13 @@ function completeCol(col,startrow){
 }
 
 function delRowsFrom(row){
+app.store();
 	for(var i=getrows()-1;i>=row;i--)delRow(i);
 
 }
 
 function crop(irows,icols,rows,cols){
+app.store();
 	for(i=getrows()-1;i>0;i--){
 	if(i>rows)delRow(i);
 	if(i<irows)delRow(i);
@@ -25,6 +28,7 @@ function crop(irows,icols,rows,cols){
 	}
 }
 function transpose(irows,icols,rows,cols){
+app.store();
 	var arr=[];
 	var jj=0;
 	var ii=0;

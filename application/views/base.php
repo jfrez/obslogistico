@@ -20,19 +20,11 @@ body {
 .box{
 	width:auto;
 	float:left;
-	margin:10px;
-
+margin:5px;
 }
 #columns {
-	-webkit-column-count: 3;
-	-webkit-column-gap: 10px;
-	-webkit-column-fill: auto;
-	-moz-column-count: 3;
-	-moz-column-gap: 10px;
-	-moz-column-fill: auto;
-	column-count: 3;
-	column-gap: 15px;
-	column-fill: auto;
+  column-count: 4;
+  column-gap: 0px;
 }
 .pin {
 	display: inline-block;
@@ -40,11 +32,13 @@ body {
 	-moz-column-break-inside: avoid;
 	column-break-inside: avoid;
 	opacity: 1;
-	
+vertical-align: top;	
 	-webkit-transition: all .2s ease;
 	-moz-transition: all .2s ease;
 	-o-transition: all .2s ease;
 	transition: all .2s ease;
+max-width: 280px;
+width: 280px;
 }
 
 </style>
@@ -67,17 +61,20 @@ $tooltip .= $f['Field']."<br>";
 }
 }
 
-echo "<h3 lass='panel-title'><a href='/?/Prep/getTable/$n' target='_blank'>".$n."</a><span class='badge'>".$t['count'][0]['id']."</span><a class='glyphicon glyphicon-info-sign' data-toggle='tooltip' data-html='true' data-placement='bottom' title='$tooltip'></a></h3>";
+$meta="";
+if(isset($t['meta']))$meta=$t['meta'];
+echo "<h5 lass='panel-title'><a href='/?/Prep/getTable/$n' target='_blank'>".$n."</a><span class='badge'>".$t['count'][0]['id']."</span><a class='glyphicon glyphicon-info-sign' data-toggle='tooltip' data-html='true' data-placement='bottom' title='$tooltip $meta' onclick='addMeta(\"$n\",\"\",\"$meta\");' ></a></h5>";
 echo "</div>";
 echo '<div class="panel-body">';
 echo '<ul class="list-group">';
 foreach($t['desc'] as $f){
 if(!starts($f['Field'],"SYS")){
-echo '<li class="list-group-item"><h5><a class="" href="#" data-toggle="tooltip2" data-html="true" data-placement="bottom" title="descripción">'.$f['Field'].' <span class="badge">'.$f['Type'].'</span></a></h5></li>';
+$meta="";
+if(isset($f['meta']))$meta=$f['meta'];
+echo '<li class="list-group-item"><h5><a class="" href="#" data-toggle="tooltip" data-html="true" data-placement="bottom" title="'.$meta.'" onclick="addMeta(\''.$n.' \',\''.$f['Field'].'\',\' '.$meta.' \');">'.$f['Field'].' <span class="badge">'.$f['Type'].'</span></a></h5></li>';
 }
 }
 echo "</ul>";
-echo "</div>";
 echo "</div>";
 echo "</div>";
 }
@@ -90,4 +87,35 @@ echo "</div>";
 $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip(); 
 });
+function addMeta(table,col,desc){
+var meta = prompt("Metadata;", desc);
+
+if (meta != null) {
+$.ajax({
+url:'/?/Base/addMeta',
+type:'POST',
+data:{table:table,col:col,valor:meta},
+success: function(){
+location.href='/?/Base';
+}
+});
+
+}
+
+
+}
+var d = document.querySelectorAll('.pin'),
+    i, w, width, height;
+/*
+for(i = 0 ; i < d.length ; i++) {
+  width= d[i].offsetWidth;
+  height= d[i].offsetHeight;
+  
+  for(w = width ; w ; w--) {
+    d[i].style.width= w+'px';
+    if(d[i].offsetHeight !== height) break;
+  }
+  d[i].style.width= (w+1)+'px';
+}
+*/
 </script>
