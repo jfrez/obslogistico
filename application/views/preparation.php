@@ -591,6 +591,8 @@ document.getElementById("well").addEventListener('click', function(e) {
 if(downstart==downend){
 selected=Array();
 
+		app.editrowlist=Array();
+		app.editcollist=Array();
 		icol = parseInt($(downstart).attr("data-col"));
 		irow = parseInt($(downstart).attr("data-row"));
 		col = parseInt($(e.target).attr("data-col"));
@@ -630,8 +632,6 @@ document.getElementById("well").addEventListener('mousedown', function(e) {
 	        $("[id^='rowindex'").removeClass("selected2");	
 	        $("[id^='cellcol'").removeClass("selected2");	
 		selected=Array();
-		//app.editrowlist=Array();
-		//app.editcollist=Array();
 		downend=null;	
 		downstart = e.target;
 		$(downstart).addClass("selected2");
