@@ -28,7 +28,8 @@ height: 16px;
 }
 
 .bootstrap-tagsinput {
-width: 100%;
+margin-left:10px;
+min-width: 180px;
 }
 .accordion {
 	margin-bottom:-3px;
@@ -241,7 +242,8 @@ box-shadow: none !important;
 <button onclick="app.transpose()" type="button" class="btn btn2" title="Rotar" style="margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/transpose.png"/></button>
 <button onclick="app.crop()" type="button" class="btn btn2" title="Cortar" style="margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/crop.png"/></button>
 <button onclick="app.complete()" type="button" class="btn btn2" title="Cortar" style="margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/fill.png"/></button>
-<button onclick="app.replace2()" type="button" class="btn btn2" title="Cortar" style="margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/replace.png"/></button>
+<button onclick="app.replace2()" type="button" class="btn btn2" title="Cortar" style="float:left;margin-left:10px;padding:0px;background:white;"><img width=25 src="/images/icons/replace.png"/></button>
+<input data-role="tagsinput" value="Categoria" width="100px" type="text" placeholder="Niveles" name = "columnas" id="columnas" class="form-control">
 </div>
 </div>
 <div class="col-md-4 ">
@@ -285,18 +287,10 @@ box-shadow: none !important;
 							<li><a href="#" onclick="validar('.$i.',\'REGION_VIEW\')">Region</a></li>
 							<li><a href="#" onclick="validar('.$i.',\'PROVINCIA_VIEW\')" >Provincia</a></li>
 							<li><a href="#" onclick="validar('.$i.',\'COMUNA_VIEW\')" >Comuna</a></li>
+							<li><input data-role="tagsinput" type="text" name="columnas'.$i.'" id="columnas'.$i.'" class="form-control atributes"></li>
 							</ul>  </div>';
 						return $dropdown; 
 					}
-function unidades($i,$unidades){
-	$dropdown ="<select class='unidades pull-right' style='float:left;' id='unidad$i'>
-		<option value=''>Unidad</option>";
-	foreach($unidades as $u){
-		$dropdown.="<option value='".$u['name']."'>".$u['name']."</option>";
-	}
-	$dropdown.="</select>";
-	return $dropdown; 
-}
 $table = Array();
 $thead= "<table id='tabla' class='ExcelTable2007'><thead><th></th>\n\n";
 $f = fopen($file, "r");
@@ -359,7 +353,21 @@ Errores:
 <script src="/js/bootstrap-tagsinput.min.js"></script>
 <script src="/js/typeahead.bundle.js"></script>
 <script>
+$('#columnas').tagsinput({
+  trimValue: true
+});
 var codeopen = false;
+function loadLevels(){
+var niveles = $("#columnas").tagsinput('items');
+var columnas = Array();
+for(var i=1;i<getcols();i++){
+ columnas[i] = $("#columnas"+i).tagsinput('items');
+
+}
+ret = {levels:niveles,columnas:columnas};
+return ret;
+}
+
 function showcode(){
 	if(codeopen){
 		codeopen=false;
@@ -418,9 +426,9 @@ function sendCSV(){
 	$.ajax({
 			'url':"/?/Fuentes/carga",
 			'method':'POST',
-			data:{'tablename':'<?php echo "BASE_".$tablename;?>',content:content,periodo:'periodo',periodoano:'anno',columna:$("#columna").val()},
+			data:{'tablename':'<?php echo "BASE_".$tablename;?>',content:content,periodo:'periodo',periodoano:'anno',columna:$("#columna").val(),levels:loadLevels()},
 			success:function(msg){
-			location.href="/?/Base/";
+			location.href="/?/Fuentes/confirm/<?php echo "BASE_".$tablename;?>/FALSE";
 			console.log(msg);
 			},
 error:function(msg){
@@ -511,15 +519,30 @@ function validate(col,type){
 if(isset($_POST['steps'])){
 	$code =trim(preg_replace('/\s\s+/', ' ', $_POST['steps']));
 	echo "app.editing=false;";
-	echo "try {
-		eval('".$code."'); 
-} catch (e) {
-	if (e instanceof SyntaxError) {
-		addError(e.message);showcode();
-	}
-}";
+	$lines = explode(PHP_EOL,$code);
+	$timer=0;
+$counter=0;
+$counter2=0;
+	foreach($lines as $c){
+$timer += 50;
+?>
+setTimeout('try {eval(\'<?php echo $c; ?>\'); } catch (e) {	if (e instanceof SyntaxError) {		addError(e.message);showcode();	}}',<?php echo $timer; ?>);
+<?php
+$counter++;
+if($timer%500 ==0){
+if($timer%1000 ==0){
+echo "setTimeout('$(\"#logo\").fadeIn()',$timer);";
+}else{
+echo "setTimeout('$(\"#logo\").fadeOut()',$timer);";
+}
+}
+if($counter == sizeof($lines)){
+echo "setTimeout('app.editing=true;',$timer);";
+echo "setTimeout(\" $('body').on('click', function (event) { $('.dropdown-toggle').on('click', function (event) {  $(this).parent().toggleClass('open');});});\",$timer);";
+}
+}
 //echo "eval('".$code."');";
-echo "app.editing=true;";
+
 }
 
 ?>
@@ -542,15 +565,6 @@ return $.map(list, function(attr) {
 }
 });
 		atributes.initialize();
-		$('.atributes').tagsinput({
-allowDuplicates: false,freeInput: true,
-typeaheadjs: {
-name: 'name',
-displayKey: 'name',
-valueKey: 'name',
-source: atributes.ttAdapter()
-}
-});
 $("#prepname").change(function(){
 		$( "#prepname option:selected" ).each(function() {
 				getCode($( this ).text());

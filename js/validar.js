@@ -24,8 +24,10 @@ validador.exec=function(col,tabla){
 			if(rowerror){
 			  addError(i,col,tabla);	
 			  $("#cell-"+i+"-"+col).addClass("error");
+			  $("#cell-"+i+"-"+col).removeClass("correct");
 			}else{
 			  $("#cell-"+i+"-"+col).addClass("correct");
+			  $("#cell-"+i+"-"+col).removeClass("error");
 			}
 			}
 		}

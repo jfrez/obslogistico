@@ -2,6 +2,10 @@
 $active=2;
 include_once("header.php");
 ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rainbow/1.2.0/themes/github.css">
+<link rel="stylesheet" href="/assets/google/css/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/google/css/bootstrap-theme.css">
+<link rel="stylesheet" href="/assets/google/css/todc-bootstrap.min.css">
 <style>
 body {
 
@@ -56,12 +60,13 @@ padding:2px;
      </div>
 <div class="clear"></div>
   <div id="content">
+<h3>Se actualizarán los siguientes registros</h3>
 <table class="ExcelTable2007">
 <thead>
 <tr>
 <?php
 foreach($cols as $c){
-echo "<th>".$c['COLUMN_NAME']."</th>";
+echo "<th>".$c."</th>";
 }
 ?>
 </tr>
@@ -78,6 +83,7 @@ echo "</tr>";
 ?>
 </tbody>
 </table>
+<a class="btn btn-danger" href="/?/Fuentes/confirm/<?php echo $tablename?>/TRUE">Confirmar Actualizaciones</a>
 </div>
 
 </div>

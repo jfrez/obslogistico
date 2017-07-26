@@ -1,5 +1,5 @@
 function dropdownizer(i){
-var txt = '<div class="dropdown pull-right"><button class="btn btn-xs myFakeClass btn-primary dropdown-toggle" type="button"  style="float:left;">Validador<span class="caret"></span></button><ul class="dropdown-menu" style="min-width:200px;"><li><a href="#" onclick="validar('+i+',\'numeric\')">Numerico</a></li><li><a href="#" onclick="validar('+i+',\'periodos\')">Periodo</a></li><li><a href="#" onclick="validar('+i+',\'anno\')">Anno</a></li> <li><a href="#" onclick="validar('+i+',\'PAIS_VIEW\')">Pais</a></li><li><a href="#" onclick="validar('+i+',\'REGION_VIEW\')">Region</a></li><li><a href="#" onclick="validar('+i+',\'PROVINCIA_VIEW\')" >Provincia</a></li><li><a href="#" onclick="validar('+i+',\'COMUNA_VIEW\')" >Comuna</a></li>  </ul>  </div>';
+var txt = '<div class="dropdown pull-right"><button class="btn btn-xs myFakeClass btn-primary dropdown-toggle" type="button"  style="float:left;">Validador<span class="caret"></span></button><ul class="dropdown-menu" style="min-width:200px;"><li><a href="#" onclick="validar('+i+',\'numeric\')">Numerico</a></li><li><a href="#" onclick="validar('+i+',\'periodos\')">Periodo</a></li><li><a href="#" onclick="validar('+i+',\'anno\')">Anno</a></li> <li><a href="#" onclick="validar('+i+',\'PAIS_VIEW\')">Pais</a></li><li><a href="#" onclick="validar('+i+',\'REGION_VIEW\')">Region</a></li><li><a href="#" onclick="validar('+i+',\'PROVINCIA_VIEW\')" >Provincia</a></li><li><a href="#" onclick="validar('+i+',\'COMUNA_VIEW\')" >Comuna</a></li> <li><input data-role="tagsinput" type="text" name="columnas'+i+'" id="columnas'+i+'" class="form-control atributes"></li> </ul>  </div>';
 
 var ret = "<b style='font-size:19px;float:left;'>"+i+"</b>"+txt;
 return ret;
@@ -26,6 +26,12 @@ $(".dropdown-menu li a").click(function() {
 $('.dropdown-toggle').on('click', function (event) {
                 $(this).parent().toggleClass('open');
                 });
+}
+app.complete = function(){
+ icol = parseInt($(downstart).attr("data-col"));
+                irow = parseInt($(downstart).attr("data-row"));
+completeCol(icol,irow);
+addCommand("completeCol("+icol+","+irow+");");
 }
 app.removeRows= function(){
 app.store();
@@ -105,12 +111,22 @@ app.store();
 app.getVal= function(row,col){
 	return $("#cell-"+row+"-"+col).html();
 }
+app.replace2= function(){
+ icol = parseInt($(downstart).attr("data-col"));
+                irow = parseInt($(downstart).attr("data-row"));
+var val1 = prompt("Buscar","");
+var val2 = prompt("Reemplazar por","");
+app.replace(irow,icol,val1,val2);
+}
 app.replace= function(row,col,val,val2){
-app.store();
 	if(app.editing)addCommand("replace("+row+","+col+',"'+val+'","'+val2+'");');
-	text=$("#cell-"+row+"-"+col).html();
+	for(var i=row;i<getrows();i++){
+	for(var j=col;j<getcols();j++){
+	text=$("#cell-"+i+"-"+j).html();
 	text = text.replaceAll(val,val2);
-	text=$("#cell-"+row+"-"+col).html(text);
+	text=$("#cell-"+i+"-"+j).html(text);
+	}
+	}
 }
 
 app.addrow = function(){
@@ -222,6 +238,13 @@ app.store();
 			$("#col"+i).html(dropdownizer(newi));
 			$("#col"+i).attr("data-col",newi);
 			$("#col"+i).attr('id',"col"+newi);
+			
+$('.dropdown-toggle').on('click', function (event) {
+                $(this).parent().toggleClass('open');
+                });	
+$('#columnas'+newi).tagsinput({
+  trimValue: true
+});
 			for(var j=0;j<rlength;j++){
 			$("#cell-"+j+"-"+i).attr("data-col",newi);
 			$("#cell-"+j+"-"+i).addClass("cellcol"+newi);
@@ -237,8 +260,5 @@ app.store();
 	for(var i=0;i<rlength;i++){
 		document.getElementById("tabla").rows[i].deleteCell(col);
 	}
-$('.dropdown-toggle').on('click', function (event) {
-                $(this).parent().toggleClass('open');
-                });	
 
 }

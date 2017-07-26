@@ -89,11 +89,39 @@ class Fuentes extends CI_Controller {
 		$q = $this->db->query("Show tables")->result_array();
 		$this->load->view('fuentes',Array('tables'=>$q));
 	}
-	public function tmptable($table)
+	public function confirm($table,$sure)
 	{
-		$data = $this->db->query("select * from $table")->result_array();
-		$columns = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'$table'")->result_array();
-		$this->load->view('tabla',Array('table'=>$data,'cols'=>$columns));
+		$columns = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'TMPTABLE'")->result_array();
+		$arr =Array();
+		$arr2 =Array();
+		$arr3 =Array();
+		$arr4 =Array();
+		foreach($columns as $c){
+			if($c['COLUMN_NAME'] != "id"){
+			if($c['COLUMN_NAME'] != "value"){
+				$arr[] = "A.".$c['COLUMN_NAME'];
+				$arr2[] = "A.".$c['COLUMN_NAME']." = B.".$c['COLUMN_NAME'];
+			}
+				$arr3[] = "A.".$c['COLUMN_NAME'];
+			}
+		}	
+		$data = $this->db->query("select ".implode(' ,',$arr)." from $table as A, TMPTABLE as B where ".implode(' AND ',$arr2)." ")->result_array();
+		if($sure=="FALSE"){
+			if(sizeof($data)==0){
+				$this->db->query("INSERT IGNORE INTO $table select NULL,".implode(' ,',$arr3)." from TMPTABLE as A");
+				redirect('Base');
+			}else{	
+		$data = $this->db->query("select ".implode(' ,',$arr3)." from $table as B, TMPTABLE as A where ".implode(' AND ',$arr2)." and A.value <> B.value")->result_array();
+				$this->load->view('tabla',Array('table'=>$data,'cols'=>$arr3,'tablename'=>$table));
+			}
+			}else{
+				$duplicate = "ON DUPLICATE KEY UPDATE value = A.value";
+				$this->db->query("INSERT INTO $table select NULL,".implode(' ,',$arr3)." from TMPTABLE as A $duplicate");
+
+				redirect('Base');
+			}
+
+
 	}
 
 	public function do_upload()
@@ -143,6 +171,7 @@ class Fuentes extends CI_Controller {
 		$comuna="comuna";
 		$periodo  = "periodo";
 		$datetime  = $this->input->post('datetime');
+		$levels  = $this->input->post('levels');
 		$periodoano  ="anno";;
 		// get structure from csv and insert db
 		ini_set('auto_detect_line_endings',TRUE);
@@ -186,6 +215,7 @@ class Fuentes extends CI_Controller {
 		$realfields=Array();
 		$sql=Array();
 		for($i=1;$i<count($fields); $i++) {
+			$levels['columnas'][$i][] =$fields[$i];
 			$realfields[] = $fields[$i];
 		}
 		while ( ($data = fgetcsv($handle,0,";") ) !== FALSE ) {
@@ -245,7 +275,6 @@ CASOS:
 			 */
 			//CASO POR CASO SE AGREGAN LOS CAMPOS
 			if($periodoi!=null and $periodoanoi!==null and array_key_exists($periodoi,$data)){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
-				echo "ANNO Y PERIODO";			
 				$per = $this->periodo($data[$periodoi],$data[$periodoanoi]); // p contiene inicio,fin,final,print,campo
 
 				foreach($per as $p){
@@ -286,90 +315,98 @@ CASOS:
 			for($i=1;$i<count($fields)-1;$i++){
 				array_push($updates,$fields[$i]." = ".$fieldsi[$i-1]."");
 			}
-
-			if(strlen($columna)>0){
-				foreach($fieldsi as $k =>$value){
-					
-					$colname = $realfields[$k];
-					echo $colname;
+			$colname="";
+			foreach($fieldsi as $k =>$value){
+				if(!empty($levels['columnas'][$k+1])){
+					$colname= $levels['columnas'][$k+1][sizeof($levels['columnas'][$k+1])-1];	
 					if(!in_array($colname,array("anno","periodo","lat","lng","lugar","region","comuna","provincia"))){
-							$duplicate = "ON DUPLICATE KEY UPDATE value = $value";
-							$sql[] = "Insert ignore into  $table"."_"."$columna values(NULL,'$colname',$value,".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
-							}
-							}
-					echo "<br>";
-							}
-			$duplicate = "ON DUPLICATE KEY UPDATE ".implode(', ',$updates);
-							$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
+						$niveles = sizeof($levels['levels']);
+						$colreal = sizeof($levels['columnas'][$k+1]);
+						for($i=$colreal;$i<$niveles;$i++){
 							
-							}
+							array_unshift($levels['columnas'][$k+1],"");
+						}
+						$duplicate = "ON DUPLICATE KEY UPDATE value = $value";
+						$sql[] = "Insert ignore into  TMPTABLE values(NULL,'".implode("' , '",$levels['columnas'][$k+1])."',$value,".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
+					}
+				}}
+			// TABLA NORMAL
+			//	$duplicate = "ON DUPLICATE KEY UPDATE ".implode(', ',$updates);
+			//						$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
 
-							for($i =0;$i<count($fieldtypes);$i++){
-							$fields[$i+1] .= $fieldtypes[$i];
-							}
+		}
 
-							$KEY= Array(
-								"SYS_MES ",
-								"SYS_TRIMESTRE ",
-								"SYS_TRIMESTRE_MOVIL ",
-								"SYS_SEMESTRE ",
-								"SYS_ANNO ",
-								"SYS_REGION ",
-								"SYS_PROVINCIA ",
-								"SYS_COMUNA "
-								);
+		for($i =0;$i<count($fieldtypes);$i++){
+			$fields[$i+1] .= $fieldtypes[$i];
+		}
 
-							$SYS= Array( 
-									"SYS_MES VARCHAR(50)",
-									"SYS_TRIMESTRE VARCHAR(50)",
-									"SYS_TRIMESTRE_MOVIL VARCHAR(50)",
-									"SYS_SEMESTRE VARCHAR(50)",
-									"SYS_ANNO VARCHAR(5)",
-									"SYS_PERIODO_INICIO DATE",
-									"SYS_PERIODO_FIN DATE",
-									"SYS_PAIS VARCHAR(50)",
-									"SYS_REGION VARCHAR(50)",
-									"SYS_PROVINCIA VARCHAR(50)",
-									"SYS_COMUNA VARCHAR(50)"
-								   );
-							$PRINT = Array(
-									"SYS_MES_PRINT VARCHAR(255)",
-									"SYS_TRIMESTRE_PRINT VARCHAR(255)",
-									"SYS_TRIMESTRE_MOVIL_PRINT VARCHAR(255)",
-									"SYS_PAIS_PRINT VARCHAR(255)",
-									"SYS_REGION_PRINT VARCHAR(255)",
-									"SYS_PROVINCIA_PRINT VARCHAR(255)",
-									"SYS_COMUNA_PRINT VARCHAR(255)",
-									"SYS_ANNO_PRINT VARCHAR(255)"
-								      );
-							if(strlen($columna)>0){
-								$sqlcreate = "CREATE TABLE if not exists $table"."_"."$columna (id Integer PRIMARY KEY AUTO_INCREMENT,$columna VARCHAR(50),value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
-							$this->db->query($sqlcreate);
-							}
-								$sqlcreate = "CREATE TABLE if not exists $table (" . implode(', ', $fields) . ",".implode(', ',$SYS).",".implode(',',$PRINT)." )";
-							$this->db->query($sqlcreate);
-							
-							if(sizeof($realfields>11)){
-								$realfields=array_slice($realfields,0,11);
-							}
-							//$this->db->query("DROP TABLE IF EXISTS $table");
-							$this->db->query($sqlcreate);
+		$KEY= Array(
+				"SYS_MES ",
+				"SYS_TRIMESTRE ",
+				"SYS_TRIMESTRE_MOVIL ",
+				"SYS_SEMESTRE ",
+				"SYS_ANNO ",
+				"SYS_REGION ",
+				"SYS_PROVINCIA ",
+				"SYS_COMUNA "
+			   );
+
+		$SYS= Array( 
+				"SYS_MES VARCHAR(50)",
+				"SYS_TRIMESTRE VARCHAR(50)",
+				"SYS_TRIMESTRE_MOVIL VARCHAR(50)",
+				"SYS_SEMESTRE VARCHAR(50)",
+				"SYS_ANNO VARCHAR(5)",
+				"SYS_PERIODO_INICIO DATE",
+				"SYS_PERIODO_FIN DATE",
+				"SYS_PAIS VARCHAR(50)",
+				"SYS_REGION VARCHAR(50)",
+				"SYS_PROVINCIA VARCHAR(50)",
+				"SYS_COMUNA VARCHAR(50)"
+			   );
+		$PRINT = Array(
+				"SYS_MES_PRINT VARCHAR(255)",
+				"SYS_TRIMESTRE_PRINT VARCHAR(255)",
+				"SYS_TRIMESTRE_MOVIL_PRINT VARCHAR(255)",
+				"SYS_PAIS_PRINT VARCHAR(255)",
+				"SYS_REGION_PRINT VARCHAR(255)",
+				"SYS_PROVINCIA_PRINT VARCHAR(255)",
+				"SYS_COMUNA_PRINT VARCHAR(255)",
+				"SYS_ANNO_PRINT VARCHAR(255)"
+			      );
+		// COMPACTA TABLAS POR COLUMNAS
+		if(sizeof($levels['levels'])>0){
+			$columnas = Array();
+			foreach($levels['levels'] as $level){
+				$columnas [] = "$level VARCHAR(50)";
+			}
+			$sqlcreate = "CREATE TABLE if not exists $table (id Integer PRIMARY KEY AUTO_INCREMENT,".implode(', ',$columnas).",value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
+			echo $sqlcreate;
+			$this->db->query($sqlcreate);
+			$this->db->query("DROP TABLE IF EXISTS TMPTABLE;");
+			$sqlcreate = "CREATE TABLE if not exists TMPTABLE (id Integer PRIMARY KEY AUTO_INCREMENT,".implode(', ',$columnas).",value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
+			$this->db->query($sqlcreate);
+		}
+
+		if(sizeof($realfields>11)){
+			$realfields=array_slice($realfields,0,11);
+		}
+		//$this->db->query("DROP TABLE IF EXISTS $table");
+		$this->db->query($sqlcreate);
 
 
-							if(strlen($columna)>0){
-							$unique = "ALTER TABLE $table"."_"."$columna ADD UNIQUE ($columna,".implode(', ',$KEY)."  )";
-							$this->db->query($unique);
-
-							}
-							$unique = "ALTER TABLE $table ADD UNIQUE (".implode(', ',$KEY)."  )";
-							$this->db->query($unique);
+		$unique = "ALTER TABLE $table ADD UNIQUE (".implode(' ,',$levels['levels']).",".implode(', ',$KEY)."  )";
+		$this->db->query($unique);
 
 
-							foreach($sql as $s)
-								$this->db->query($s);
-							fclose($handle);
-							ini_set('auto_detect_line_endings',FALSE);
-							return $sql;
+
+		foreach($sql as $s){
+			$this->db->query($s);
+			echo $s."\n";
+		}
+		fclose($handle);
+		ini_set('auto_detect_line_endings',FALSE);
+		return $sql;
 
 	}
 }

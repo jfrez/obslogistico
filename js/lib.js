@@ -5,7 +5,7 @@ app.store();
 		if(getVal(i,col).length>0){
 			anno=getVal(i,col);
 		}
-		setVal(i,col,anno);
+			$("#cell-"+i+"-"+col).html(anno);	
 	}
 
 }
