@@ -32,6 +32,7 @@ class Prep extends CI_Controller {
 	{
 		$tablename  = $this->input->post('tablename');
 		$prepname  = $this->input->post('prepname');
+		$prepname=preg_replace("/[^A-Za-z0-9]/", '', $prepname);
 		$tablename=$prepname;	
 		$steps  = $this->input->post('steps');
 		$tablefile  = $this->input->post('tablefile');
@@ -101,6 +102,11 @@ class Prep extends CI_Controller {
 		foreach($row as $field => $v){
 		if(!$this->startsWith($field,"SYS")){
 			$table[$k][$field] = $v;
+		}else{
+			if($v!=""){
+			$table[$k][$field] = $v;
+
+			}
 		}
 		}
 		}

@@ -61,6 +61,11 @@ class Fuentes extends CI_Controller {
 		$row = $q[0];
 		return $row; 	
 	}
+	private function pais($pais){
+		$q = $this->db->query("Select SYS_PAIS.original,SYS_PAIS.final,SYS_PAIS.final as print from SYS_PAIS where  SYS_PAIS.original = '$pais'")->result_array();
+		$row = $q[0];
+		return $row; 	
+	}
 
 
 	private function periodo($periodo=null,$anno = null){
@@ -107,13 +112,10 @@ class Fuentes extends CI_Controller {
 		}	
 		$data = $this->db->query("select ".implode(' ,',$arr)." from $table as A, TMPTABLE as B where ".implode(' AND ',$arr2)." ")->result_array();
 		if($sure=="FALSE"){
-			if(sizeof($data)==0){
-				$this->db->query("INSERT IGNORE INTO $table select NULL,".implode(' ,',$arr3)." from TMPTABLE as A");
-				redirect('Base');
-			}else{	
+		$tmp = $this->db->query("select * from TMPTABLE")->result_array();	
 		$data = $this->db->query("select ".implode(' ,',$arr3)." from $table as B, TMPTABLE as A where ".implode(' AND ',$arr2)." and A.value <> B.value")->result_array();
-				$this->load->view('tabla',Array('table'=>$data,'cols'=>$arr3,'tablename'=>$table));
-			}
+				$this->load->view('tabla',Array('table'=>$data,'cols'=>$arr3,'tablename'=>$table,'tmp'=>$tmp));
+			
 			}else{
 				$duplicate = "ON DUPLICATE KEY UPDATE value = A.value";
 				$this->db->query("INSERT INTO $table select NULL,".implode(' ,',$arr3)." from TMPTABLE as A $duplicate");
@@ -123,6 +125,23 @@ class Fuentes extends CI_Controller {
 
 
 	}
+	public function ver($table)
+	{
+		$columns = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'$table'")->result_array();
+		$arr =Array();
+		$arr2 =Array();
+		$arr3 =Array();
+		$arr4 =Array();
+		foreach($columns as $c){
+				$arr3[] = $c['COLUMN_NAME'];
+		}	
+		$data = $this->db->query("select ".implode(' ,',$arr3)." from $table  ")->result_array();
+				$this->load->view('tabla2',Array('table'=>$data,'cols'=>$arr3));
+			
+
+
+	}
+
 
 	public function do_upload()
 	{
@@ -166,7 +185,9 @@ class Fuentes extends CI_Controller {
 		$regioni=null;
 		$provinciai=null;
 		$comunai=null;
+		$paisi=null;
 		$region="region";
+		$pais="pais";
 		$provincia="provincia";
 		$comuna="comuna";
 		$periodo  = "periodo";
@@ -188,7 +209,7 @@ class Fuentes extends CI_Controller {
 			$f = strtolower(trim($data[$i]));
 			if ($f) {
 				// normalize the field name, strip to 20 chars if too long
-				$f = substr(preg_replace ('/[^0-9a-z]/', '_', $f), 0, 20);
+			//	$f = substr(preg_replace ('/[^0-9a-z]/', '_', $f), 0, 20);
 				$field_count++;
 				$fields[] = $f;
 				$fieldtypes[] = " DOUBLE";
@@ -210,6 +231,9 @@ class Fuentes extends CI_Controller {
 				if(strlen($comuna)>0)
 					if(strtoupper($comuna)==strtoupper($f))
 						$comunai=$i;
+				if(strlen($pais)>0)
+					if(strtoupper($pais)==strtoupper($f))
+						$paisi=$i;
 			}
 		}
 		$realfields=Array();
@@ -296,20 +320,25 @@ CASOS:
 				$SYS["SYS_PERIODO_INICIO"] = "'".$p['inicio']."'"; 
 				$SYS["SYS_PERIODO_FIN"] = "'".$p['fin']."'"; 
 			}
-			if($regioni){
+			if(isset($regioni)){
 				$p = $this->region($data[$regioni]);
 				$SYS["SYS_REGION"] = "'".$p['final']."'"; 
 				$PRINT["SYS_REGION_PRINT"] = "'".$p['print']."'"; 
 			}
-			if($provinciai){
+			if(isset($provinciai)){
 				$p = $this->provincia($data[$provinciai]);
 				$SYS["SYS_PROVINCIA"] = "'".$p['final']."'"; 
 				$PRINT["SYS_PROVINCIA_PRINT"] = "'".$p['print']."'"; 
 			}
-			if($comunai){
+			if(isset($comunai)){
 				$p = $this->comuna($data[$comunai]);
 				$SYS["SYS_COMUNA"] = "'".$p['final']."'"; 
 				$PRINT["SYS_COMUNA_PRINT"] = "'".$p['print']."'"; 
+			}
+			if(isset($paisi)){
+				$p = $this->pais($data[$paisi]);
+				$SYS["SYS_PAIS"] = "'".$p['final']."'"; 
+				$PRINT["SYS_PAIS_PRINT"] = "'".$p['print']."'"; 
 			}
 			$updates=array();
 			for($i=1;$i<count($fields)-1;$i++){
@@ -319,7 +348,7 @@ CASOS:
 			foreach($fieldsi as $k =>$value){
 				if(!empty($levels['columnas'][$k+1])){
 					$colname= $levels['columnas'][$k+1][sizeof($levels['columnas'][$k+1])-1];	
-					if(!in_array($colname,array("anno","periodo","lat","lng","lugar","region","comuna","provincia"))){
+					if(!in_array($colname,array("anno","periodo","lat","lng","lugar","region","comuna","provincia","pais"))){
 						$niveles = sizeof($levels['levels']);
 						$colreal = sizeof($levels['columnas'][$k+1]);
 						for($i=$colreal;$i<$niveles;$i++){
@@ -327,7 +356,7 @@ CASOS:
 							array_unshift($levels['columnas'][$k+1],"");
 						}
 						$duplicate = "ON DUPLICATE KEY UPDATE value = $value";
-						$sql[] = "Insert ignore into  TMPTABLE values(NULL,'".implode("' , '",$levels['columnas'][$k+1])."',$value,".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
+						$sql[] = "Insert ignore into  TMPTABLE values(NULL,'".implode("' , '",$levels['columnas'][$k+1])."',$value,".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate." ;";
 					}
 				}}
 			// TABLA NORMAL
@@ -348,6 +377,7 @@ CASOS:
 				"SYS_ANNO ",
 				"SYS_REGION ",
 				"SYS_PROVINCIA ",
+				"SYS_PAIS ",
 				"SYS_COMUNA "
 			   );
 
@@ -383,8 +413,8 @@ CASOS:
 			$sqlcreate = "CREATE TABLE if not exists $table (id Integer PRIMARY KEY AUTO_INCREMENT,".implode(', ',$columnas).",value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
 			echo $sqlcreate;
 			$this->db->query($sqlcreate);
-			$this->db->query("DROP TABLE IF EXISTS TMPTABLE;");
-			$sqlcreate = "CREATE TABLE if not exists TMPTABLE (id Integer PRIMARY KEY AUTO_INCREMENT,".implode(', ',$columnas).",value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
+			$this->db->query("DROP TABLE  IF EXISTS   TMPTABLE;");
+			$sqlcreate = "CREATE  TABLE if not exists TMPTABLE (id Integer PRIMARY KEY AUTO_INCREMENT,".implode(', ',$columnas).",value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
 			$this->db->query($sqlcreate);
 		}
 

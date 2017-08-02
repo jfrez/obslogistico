@@ -278,7 +278,7 @@ box-shadow: none !important;
 					<?php
 					function dropdown($i){
 						$dropdown ='<div class="dropdown pull-right">
-							<button class="btn btn-xs myFakeClass btn-primary dropdown-toggle" type="button"  style="float:left;">Validador<span class="caret"></span></button>
+							<button class="btn btn-xs myFakeClass  dropdown-toggle" type="button"  style="float:left;"><span class="glyphicon glyphicon-cog"></span></button>
 							<ul class="dropdown-menu" style="min-width:200px;">
 							<li><a href="#" onclick="validar('.$i.',\'numeric\')">Numerico</a></li>
 							<li><a href="#" onclick="validar('.$i.',\'periodos\')">Periodo</a></li>
@@ -288,6 +288,16 @@ box-shadow: none !important;
 							<li><a href="#" onclick="validar('.$i.',\'PROVINCIA_VIEW\')" >Provincia</a></li>
 							<li><a href="#" onclick="validar('.$i.',\'COMUNA_VIEW\')" >Comuna</a></li>
 							<li><input data-role="tagsinput" type="text" name="columnas'.$i.'" id="columnas'.$i.'" class="form-control atributes"></li>
+							<script>
+							$(function(){
+							$("#columnas'.$i.'").on("itemAdded", function(event) {
+								app.setColumn('.$i.',$("#columnas'.$i.'").val());
+							});
+							$("#columnas'.$i.'").on("itemRemoved", function(event) {
+								app.setColumn('.$i.',$("#columnas'.$i.'").val());
+							});	
+							});
+							</script>
 							</ul>  </div>';
 						return $dropdown; 
 					}
@@ -312,7 +322,7 @@ while (($line = fgetcsv($f,0,';')) !== false) {
 }
 for($i=0;$i<$cols;$i++){
 	if($i>0)
-		$thead .= "<th id='col$i' data-col='".$i."' class='cellcol".($i)."' ondblclick='app.editcol($i)' style='min-width:100px;'><b style='font-size:19px;float:left;'>$i</b> ".dropdown($i)."</th>";
+		$thead .= "<th id='col$i' data-col='".$i."' class='cellcol".($i)."' ondblclick='app.editcol($i)' style='min-width:150px;'><b style='font-size:19px;float:left;'>$i</b> ".dropdown($i)."</th>";
 	else
 		$thead .= "<th id='col$i' class='cellcol".($i)."' ondblclick='app.editcol($i)'>0</th>";
 }
@@ -356,6 +366,14 @@ Errores:
 $('#columnas').tagsinput({
   trimValue: true
 });
+$("#columnas").on('itemAdded', function(event) {
+app.setColumns($("#columnas").val());
+});
+$("#columnas").on('itemRemoved', function(event) {
+app.setColumns($("#columnas").val());
+});
+
+
 var codeopen = false;
 function loadLevels(){
 var niveles = $("#columnas").tagsinput('items');
@@ -429,7 +447,6 @@ function sendCSV(){
 			data:{'tablename':'<?php echo "BASE_".$tablename;?>',content:content,periodo:'periodo',periodoano:'anno',columna:$("#columna").val(),levels:loadLevels()},
 			success:function(msg){
 			location.href="/?/Fuentes/confirm/<?php echo "BASE_".$tablename;?>/FALSE";
-			console.log(msg);
 			},
 error:function(msg){
 addError(msg);
@@ -454,7 +471,7 @@ function saveContent(fileContents, fileName)
 	link.click();
 }
 function addCommand(comm){
-	$("#steps").val($("#steps").val()+"\n"+comm);
+	$("#steps").val($("#steps").val()+comm+"\n");
 }
 function addError(row,col,type){
 	$("#errors").html($("#errors").html()+"\n"+"Row: "+row+" Col:"+col+", "+type);
@@ -524,7 +541,7 @@ if(isset($_POST['steps'])){
 $counter=0;
 $counter2=0;
 	foreach($lines as $c){
-$timer += 50;
+$timer += 100;
 ?>
 setTimeout('try {eval(\'<?php echo $c; ?>\'); } catch (e) {	if (e instanceof SyntaxError) {		addError(e.message);showcode();	}}',<?php echo $timer; ?>);
 <?php
@@ -623,7 +640,7 @@ if(isNaN(icol) && isNaN(col)){
 		}else
 		if(isNaN(irow) && isNaN(row)){
 			for(var i =icol;i<=col;i++){
-				app.editcol(i);	
+				app.editcol(i);
 				$("#col"+i).addClass("selected2");
 			for(var j =1;j<getrows();j++){
 				$("#cell-"+j+"-"+i).addClass("selected2");
@@ -673,7 +690,6 @@ document.getElementById("well").addEventListener('mouseup', function(e) {
 		}	
 		});
 document.getElementById("well").addEventListener('mousemove', function(e) {
-		if(e.which!=1)return;
 		if(selecting){
 		selected=Array();
 		$(".selected2").removeClass("selected2");
@@ -707,20 +723,21 @@ document.getElementById("well").addEventListener('mousemove', function(e) {
 			}
 			}
 		}			
-if(Math.abs(e.clientX - $(window).width())<50){
-document.getElementById("well").scrollLeft+=5;
-}
-if(Math.abs(e.clientY - $(window).height())<50){
-document.getElementById("well").scrollTop+=5;
-}
-if(Math.abs(e.clientX)<50){
-document.getElementById("well").scrollLeft-=5;
-}
-if(Math.abs(e.clientY-$("#well").offset().top)<50){
-document.getElementById("well").scrollTop-=5;
-}
 
 		}
+if(Math.abs(e.clientX - $(window).width())<50){
+document.getElementById("well").scrollLeft+=10;
+}
+if(Math.abs(e.clientY - $(window).height())<50){
+document.getElementById("well").scrollTop+=10;
+}
+if(Math.abs(e.clientX)<50){
+document.getElementById("well").scrollLeft-=10;
+}
+if(Math.abs(e.clientY-$("#well").offset().top)<50){
+document.getElementById("well").scrollTop-=10;
+}
+
 		});
 
 function copy(){

@@ -63,7 +63,7 @@ $tooltip .= $f['Field']."<br>";
 
 $meta="";
 if(isset($t['meta']))$meta=$t['meta'];
-echo "<h5 lass='panel-title'><a href='/?/Prep/getTable/$n' target='_blank'>".$n."</a><span class='badge'>".$t['count'][0]['id']."</span><a class='glyphicon glyphicon-info-sign' data-toggle='tooltip' data-html='true' data-placement='bottom' title='$tooltip $meta' onclick='addMeta(\"$n\",\"\",\"$meta\");' ></a></h5>";
+echo "<h5 lass='panel-title'>".$n."<a class='badge' href='/?/Prep/getTable/$n' target='_blank'>json</a><a href='/?/Fuentes/ver/".$n."' class='badge'>ver</a><a class='glyphicon glyphicon-info-sign' data-toggle='tooltip' data-html='true' data-placement='bottom' title='$tooltip $meta' onclick='addMeta(\"$n\",\"\",\"$meta\");' ></a></h5>";
 echo "</div>";
 echo '<div class="panel-body">';
 echo '<ul class="list-group">';

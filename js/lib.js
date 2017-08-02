@@ -67,4 +67,22 @@ selected=Array();
 		ii=0;
 	}
 }
+function undo(){
+document.getElementById('well').innerHTML=app.tabledata.pop();
+$(".dropdown-menu li a").click(function() {
+                                $(this).closest(".dropdown-menu").prev().click();;
+                                });
+$('.dropdown-toggle').on('click', function (event) {
+                $(this).parent().toggleClass('open');
+                });
+}
 
+function setColumns(val){
+$("#columnas").tagsinput("removeAll");
+$("#columnas").tagsinput("add",val);
+}
+
+function setColumn(col,val){
+$("#columnas"+col).tagsinput("removeAll");
+$("#columnas"+col).tagsinput("add",val);
+}

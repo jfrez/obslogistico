@@ -12,7 +12,6 @@ body {
 }
 #content{
  position: absolute;
-  width: 30000px;
 }
 .ExcelTable2007 {
         border: 1px solid #B0CBEF;
@@ -52,7 +51,7 @@ body {
 }
 
 th{
-padding:2px;
+max-width:100px;
 }
 </style>
 <div class="clear"></div>
@@ -60,8 +59,9 @@ padding:2px;
      </div>
 <div class="clear"></div>
   <div id="content">
+<a class="btn btn-danger" href="/?/Fuentes/confirm/<?php echo $tablename?>/TRUE">Confirmar Carga</a>
 <h3>Se actualizarán los siguientes registros</h3>
-<table class="ExcelTable2007">
+<table class="table table-condensed table-responsive">
 <thead>
 <tr>
 <?php
@@ -82,10 +82,43 @@ echo "</tr>";
 }
 ?>
 </tbody>
+<div class="table-responsive">
 </table>
-<a class="btn btn-danger" href="/?/Fuentes/confirm/<?php echo $tablename?>/TRUE">Confirmar Actualizaciones</a>
-</div>
+<h3>Se insertarán los siguientes registros</h3>
+<table class="table table-condensed table-responsive">
+<thead>
+<tr>
+<th></th>
+<?php
+foreach($cols as $c){
+echo "<th>".$c."</th>";
+}
+?>
+</tr>
+</thead>
+<tbody>
+<?php
+foreach($tmp as $tr){
+echo "<tr>";
+foreach($tr as $k=> $td){
+echo "<td>".$td."</td>";
+}
+echo "</tr>";
+}
+?>
+</tbody>
+</table>
 
+</div>
+</div>
 </div>
 </body>
 </html>
+<script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js'></script>
+<script src='https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js'></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<script>
+$(document).ready(function () {
+        $('table').DataTable();
+    });
+</script>
