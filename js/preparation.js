@@ -1,5 +1,5 @@
 function dropdownizer(i){
-	var txt = '<div class="dropdown pull-right"><button class="btn btn-xs myFakeClass  dropdown-toggle" type="button"  style="float:left;"><span class="glyphicon glyphicon-cog"></span></button><ul class="dropdown-menu" style="min-width:200px;"><li><a href="#" onclick="validar('+i+',\'numeric\')">Numerico</a></li><li><a href="#" onclick="validar('+i+',\'periodos\')">Periodo</a></li><li><a href="#" onclick="validar('+i+',\'anno\')">Anno</a></li> <li><a href="#" onclick="validar('+i+',\'PAIS_VIEW\')">Pais</a></li><li><a href="#" onclick="validar('+i+',\'REGION_VIEW\')">Region</a></li><li><a href="#" onclick="validar('+i+',\'PROVINCIA_VIEW\')" >Provincia</a></li><li><a href="#" onclick="validar('+i+',\'COMUNA_VIEW\')" >Comuna</a></li> <li><input data-role="tagsinput" type="text" name="columnas'+i+'" id="columnas'+i+'" class="form-control atributes" data-col="'+i+'"></li> </ul>  </div>';
+	var txt = '<div class="dropdown pull-right"><button class="btn btn-xs myFakeClass  dropdown-toggle" type="button"  style="float:left;"><span class="glyphicon glyphicon-cog"></span></button><ul class="dropdown-menu" style="min-width:200px;"><li><a href="#" onclick="validar('+i+',\'numeric\')">Numerico</a></li><li><a href="#" onclick="validar('+i+',\'periodos\')">Periodo</a></li><li><a href="#" onclick="validar('+i+',\'anno\')">Anno</a></li> <li><a href="#" onclick="validar('+i+',\'PAIS_VIEW\')">Pais</a></li><li><a href="#" onclick="validar('+i+',\'REGION_VIEW\')">Region</a></li><li><a href="#" onclick="validar('+i+',\'PROVINCIA_VIEW\')" >Provincia</a></li><li><a href="#" onclick="validar('+i+',\'COMUNA_VIEW\')" >Comuna</a></li> <li><a href="#" onclick="validar('+i+',\'LUGAR_VIEW\')" >Lugar</a></li><li><input data-role="tagsinput" type="text" name="columnas'+i+'" id="columnas'+i+'" class="form-control atributes" data-col="'+i+'"></li> </ul>  </div>';
 	var ret = "<b style='font-size:19px;float:left;'>"+i+"</b>"+txt;
 	return ret;
 }
@@ -28,40 +28,47 @@ app.complete = function(){
 	addCommand("completeCol("+icol+","+irow+");");
 }
 app.removeRows= function(){
-	app.store();
+	if(app.editing)app.store();
 	app.editrowlist.sort(function(a, b){return b-a});
 	for(var e in app.editrowlist){
 		app.removeRow(app.editrowlist[e]);
 	}
 	app.editrowlist = [];
+	app.recalc();
 }
 app.transpose= function(){
-	app.store();
+	if(app.editing)app.store();
 	icol = parseInt($(downstart).attr("data-col"));
 	irow = parseInt($(downstart).attr("data-row"));
 	ecol = parseInt($(downend).attr("data-col"));
 	erow = parseInt($(downend).attr("data-row"));
+	app.editing=false;
 	transpose(irow,icol,erow,ecol);
+	app.editing=true;
 	addCommand("transpose("+irow+","+icol+","+erow+","+ecol+");");
+	app.recalc();
 }
 app.crop= function(){
-	app.store();
+	if(app.editing)app.store();
 	icol = parseInt($(downstart).attr("data-col"));
 	irow = parseInt($(downstart).attr("data-row"));
 	ecol = parseInt($(downend).attr("data-col"));
 	erow = parseInt($(downend).attr("data-row"));
-	crop(irow,icol,erow,ecol);
 	addCommand("crop("+irow+","+icol+","+erow+","+ecol+");");
-
+	app.editing=false;
+	crop(irow,icol,erow,ecol);
+	app.editing=true;
+	app.recalc();
 }
 app.removeCols= function(){
-	app.store();
+	if(app.editing)app.store();
 	app.editcollist.sort(function(a, b){return b-a});
 
 	for(var e in app.editcollist){
 		app.removeCol(app.editcollist[e]);
 	}
 	app.editcollist = [];
+	app.recalc();
 }
 
 
@@ -98,7 +105,7 @@ app.noeditcell= function(row,col){
 	app.setVal(row,col,$("#input-"+row+"-"+col).val());
 }
 app.setVal= function(row,col,val){
-	app.store();
+	if(app.editing)app.store();
 	if(app.editing)addCommand("setVal("+row+","+col+',"'+val+'");');
 	$("#cell-"+row+"-"+col).html(val);
 }
@@ -124,17 +131,24 @@ app.replace= function(col,val,val2){
 }
 app.setColumns = function(val){
 	if(app.editing)addCommand('setColumns("'+val+'");');
-}
+if(!app.editing){
+	$("#columnas").tagsinput("removeAll");
+$("#columnas").tagsinput("add",val);
+}}
 app.setColumn = function(col,val){
 	if(app.editing)addCommand('setColumn('+col+',"'+val+'");');
+if(!app.editing){
+$("#columnas"+col).tagsinput("removeAll");
+$("#columnas"+col).tagsinput("add",val);
+}
 }
 app.addrow = function(){
-	app.store();
+	if(app.editing)app.store();
 	if(app.editing)addCommand("addrow();");
 	rows = document.getElementById("tabla").rows.length;
 	cols=document.getElementById("tabla").rows[0].cells.length
 		r =document.getElementById("tabla").insertRow(rows);
-	r.setAttribute("class","row");
+	r.setAttribute("class","r");
 	r.setAttribute("id","row"+rows);
 	for(var i=0;i<cols;i++){
 		cell=r.insertCell(i);
@@ -150,30 +164,31 @@ app.addrow = function(){
 			cell.id= "cell-"+rows+"-"+i; 
 		}
 	}
+	if(app.editing)app.recalc();
 }
 app.addcol= function(){
-	app.store();
+	if(app.editing)app.store();
 	if(app.editing)addCommand("addcol();");
 	rows = document.getElementById("tabla").rows.length;
-	cols=document.getElementById("tabla").rows[0].cells.length;
-	console.log(cols);
+	cols=document.getElementById("tabla").rows[0].cells.length-1;
 	var tr = document.getElementById('tabla').tHead.children[0],
 	th = document.createElement('th');
-	th.innerHTML =dropdownizer(cols-1);
-	th.setAttribute("id","col"+(cols -1));
-	th.setAttribute("data-col",(cols -1));
-	th.setAttribute("class","cellcol"+(cols -1));
-	th.setAttribute("ondblclick","app.editcol("+(cols -1)+")");
+	th.innerHTML =dropdownizer(cols);
+	th.setAttribute("id","col"+(cols));
+	th.setAttribute("data-col",(cols));
+	th.setAttribute("class","cellcol"+(cols));
+	th.setAttribute("ondblclick","app.editcol("+(cols)+")");
 	th.setAttribute("style","min-width:100px;");
 	tr.appendChild(th);
 	for(var i=1;i<rows;i++){
 		cell=document.getElementById("tabla").rows[i].insertCell(cols-1);
 		cell.setAttribute("data-row",i);
-		cell.setAttribute("data-col",(cols-1));
-		cell.setAttribute("class","cellcol"+(cols-1)+" cellrow"+i);
-		cell.setAttribute("ondblclick","app.edit("+i+","+(cols-1)+")");
-		cell.id= "cell-"+i+"-"+(cols-1); 
+		cell.setAttribute("data-col",(cols));
+		cell.setAttribute("class","cellcol"+(cols)+" cellrow"+i);
+		cell.setAttribute("ondblclick","app.edit("+i+","+(cols)+")");
+		cell.id= "cell-"+i+"-"+(cols); 
 	}
+	if(app.editing)app.recalc();
 }
 app.editrow = function(row){
 	if(app.editrowlist.indexOf(row)>-1){
@@ -185,37 +200,68 @@ app.editrow = function(row){
 		app.editrowlist.push(row);
 	}
 }
+app.recalc = function(){
+
+	for(var i=0;i<$(".r").length;i++){
+		index=i;
+		var td = $($(".r")[i]).children();
+		for(var col=0;col<$($(".r")[0]).children().length;col++){
+			if(i==0){
+				var th = document.getElementById("tabla").rows[0].cells[col];
+				if(col>0){
+					th.innerHTML=dropdownizer(col);
+					th.id = "col"+col;
+					$(th).css("background-color","lightgrey");
+					$(th).attr('ondblclick',"").unbind('click');
+					$(th).attr('ondblclick',"app.editcol("+col+")");
+					$(th).attr("data-col",col);
+					$(th).attr("class","cellcol"+col);
+					$(th).attr("style","min-width: 150px;");
+				}
+				$('#columnas'+col).tagsinput({trimValue: true});
+				$("#columnas"+col).on("itemAdded", function(event) {
+						val = $(event.currentTarget).val();
+						col2 = event.currentTarget.dataset.col;
+						if(app.editing)
+						app.setColumn(col2,val);
+						});
+				$("#columnas"+col).on("itemRemoved", function(event) {
+						val = $(event.currentTarget).val();
+						col2 = event.currentTarget.dataset.col;
+						if(app.editing)
+						app.setColumn(col2,val);
+						}); 
+			}
+				if(col==0){
+					$(td[col]).html(index+1);
+					$(td[col]).attr("class","rows editrow"+(index+1));
+					$(td[col]).attr("id","rowindex"+(index+1));
+					$(td[col]).attr("data-row",(index+1));
+					$(td[col]).attr('ondblclick',"").unbind('dblclick');
+					$(td[col]).attr("ondblclick","app.editrow("+(index+1)+")");
+				
+				}else{
+					$(td[col]).attr("id","cell-"+(index+1)+"-"+col);
+					$(td[col]).attr("data-row",(index+1));
+					$(td[col]).attr("data-col",(col));
+					$(td[col]).attr("class","cellcol"+(col)+" cellrow"+(index+1));
+					$(td[col]).attr('ondblclick',"").unbind('dblclick');
+					$(td[col]).attr('ondblclick',"app.edit("+(index+1)+","+col+")");
+
+				}
+		}
+	}
+
+
+}
 app.removeRow = function(row){
-	app.store();
+	try{
+	if(app.editing)app.store();
 	if(app.editing)addCommand("delRow("+row+");");
-	$(".row").each(function(index){
-			if(index>row){
-			var cols = document.getElementById("tabla").rows[row].cells.length;
-			nindex=index-1;
-			$(".editrow"+index).addClass("editrow"+nindex);
-			$(".editrow"+index).removeClass("editrow"+index);
-			$("#rowindex"+index).html(nindex);
-			$("#rowindex"+index).attr("data-row",nindex);
-			$("#rowindex"+index).attr('ondblclick',"").unbind('dblclick');
-			$("#rowindex"+index).attr('ondblclick',"app.editrow("+nindex+")");
-			$("#rowindex"+index).attr("id","rowindex"+nindex);
-			for(var i =0;i<cols;i++){
-			$("#cell-"+index+"-"+i).attr("data-row",nindex);
-			$("#cell-"+index+"-"+i).addClass("cellrow"+nindex);
-			$("#cell-"+index+"-"+i).removeClass("cellrow"+index);
-			$("#cell-"+index+"-"+i).attr('ondblclick',"").unbind('dblclick');
-			$("#cell-"+index+"-"+i).attr('ondblclick',"app.edit("+nindex+","+i+")");
-			$("#cell-"+index+"-"+i).attr("id","cell-"+nindex+"-"+i);
-			}
-			$("#row"+index).attr("id","row"+nindex);
-			}
-
-
-	});
 	document.getElementById("tabla").deleteRow(row);
 
 
-
+	}catch(err){}
 }
 app.editcol = function(col){
 	if(app.editcollist.indexOf(col)>-1){
@@ -225,55 +271,15 @@ app.editcol = function(col){
 	}
 }
 app.removeCol= function(col){
-	app.store();
+	if(app.editing)app.store();
 	if(app.editing)addCommand("delCol("+col+");");
 	rlength= document.getElementById("tabla").rows.length;
-	var cols = document.getElementById("tabla").rows[0].cells.length;
 	for(var i=0;i<rlength;i++){
+	try{
 		document.getElementById("tabla").rows[i].deleteCell(col);
+	}catch(err){}
 	}
-	var cols = document.getElementById("tabla").rows[0].cells.length;
-	for(var i=1;i<cols;i++){
-		var th = document.getElementById("tabla").rows[0].cells[i+1];
-		if(typeof th != "undefined"){
-			if(i>0)th.innerHTML=dropdownizer(i);
-			th.id = "col"+i;
-			$(th).css("background-color","lightgrey");
-			$(th).attr('ondblclick',"").unbind('click');
-			$(th).attr('ondblclick',"app.editcol("+i+")");
-			$(th).attr("data-col",i);
-			$(th).attr("class","cellcol"+i);
-			$(th).attr("style","min-width: 150px;");
-
-			$('#columnas'+i).tagsinput({
-trimValue: true
-});
-$("#columnas"+i).on("itemAdded", function(event) {
-console.log(event);
-val = $(event.currentTarget).val();
-col = event.currentTarget.dataset.col;
-		app.setColumn(col,val);
-		});
-$("#columnas"+i).on("itemRemoved", function(event) {
-val = $(event.currentTarget).val();
-col = event.currentTarget.dataset.col;
-		app.setColumn(col,val);
-		}); 
-for(var j=1;j<rlength;j++){
-	var cell = document.getElementById("tabla").rows[j].cells[i];
-	$(cell).attr("data-col",i);
-	$(cell).attr('ondblclick',"").unbind('dblclick');
-	$(cell).attr('ondblclick',"app.edit("+j+","+i+")");
-	$(cell).attr("class","cellcol"+i+" cellrow"+j);
-	cell.id = "cell-"+j+"-"+i;
-
-}
-
-
-}
-}
-$('.dropdown-toggle').on('click', function (event) {
-		$(this).parent().toggleClass('open');
-		});	
-
+	$('.dropdown-toggle').on('click', function (event) {
+			$(this).parent().toggleClass('open');
+			});	
 }

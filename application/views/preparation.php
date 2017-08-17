@@ -287,13 +287,16 @@ box-shadow: none !important;
 							<li><a href="#" onclick="validar('.$i.',\'REGION_VIEW\')">Region</a></li>
 							<li><a href="#" onclick="validar('.$i.',\'PROVINCIA_VIEW\')" >Provincia</a></li>
 							<li><a href="#" onclick="validar('.$i.',\'COMUNA_VIEW\')" >Comuna</a></li>
+							<li><a href="#" onclick="validar('.$i.',\'LUGAR_VIEW\')" >Lugar</a></li>
 							<li><input data-role="tagsinput" type="text" name="columnas'.$i.'" id="columnas'.$i.'" class="form-control atributes"></li>
 							<script>
 							$(function(){
 							$("#columnas'.$i.'").on("itemAdded", function(event) {
+								if(app.editing)
 								app.setColumn('.$i.',$("#columnas'.$i.'").val());
 							});
 							$("#columnas'.$i.'").on("itemRemoved", function(event) {
+								if(app.editing)
 								app.setColumn('.$i.',$("#columnas'.$i.'").val());
 							});	
 							});
@@ -309,7 +312,7 @@ $rows = 1;
 $tbody="";
 $tfoot="";
 while (($line = fgetcsv($f,0,';')) !== false) {
-	$tbody .= "<tr class='row' id='row$rows'><td class='rows editrow$rows' id='rowindex$rows' data-row='$rows' ondblclick='app.editrow($rows)'>$rows</td>";
+	$tbody .= "<tr class='r' id='row$rows'><td class='rows editrow$rows' id='rowindex$rows' data-row='$rows' ondblclick='app.editrow($rows)'>$rows</td>";
 	$table[]=$line;
 	$tmpcol =1; 
 	foreach ($line as $cell) {
@@ -320,11 +323,9 @@ while (($line = fgetcsv($f,0,';')) !== false) {
 	if($tmpcol > $cols)$cols = $tmpcol;
 	$tbody .= "</tr>\n";
 }
-for($i=0;$i<$cols;$i++){
-	if($i>0)
+for($ii=0;$ii<$cols;$ii++){
+$i=$ii+1;
 		$thead .= "<th id='col$i' data-col='".$i."' class='cellcol".($i)."' ondblclick='app.editcol($i)' style='min-width:150px;'><b style='font-size:19px;float:left;'>$i</b> ".dropdown($i)."</th>";
-	else
-		$thead .= "<th id='col$i' class='cellcol".($i)."' ondblclick='app.editcol($i)'>0</th>";
 }
 $thead.="</thead>";
 fclose($f);
@@ -367,9 +368,11 @@ $('#columnas').tagsinput({
   trimValue: true
 });
 $("#columnas").on('itemAdded', function(event) {
+if(app.editing)
 app.setColumns($("#columnas").val());
 });
 $("#columnas").on('itemRemoved', function(event) {
+if(app.editing)
 app.setColumns($("#columnas").val());
 });
 
@@ -448,18 +451,13 @@ function sendCSV(){
 			success:function(msg){
 			location.href="/?/Fuentes/confirm/<?php echo "BASE_".$tablename;?>/FALSE";
 			},
-error:function(msg){
-addError(msg);
-showcode();
-},
-statusCode: {
-500: function() {
-addError("Error 500");
-showcode();
+			complete: function (XMLHttpRequest, textStatus) {
 
-}
-}
-
+        		},
+		        error: function (e, status) {
+			$("#myModal").modal();
+			$("#error").html(e.responseText);
+			}			
 });
 }
 
@@ -471,7 +469,9 @@ function saveContent(fileContents, fileName)
 	link.click();
 }
 function addCommand(comm){
+if(app.editing)
 	$("#steps").val($("#steps").val()+comm+"\n");
+console.log(app.editing);
 }
 function addError(row,col,type){
 	$("#errors").html($("#errors").html()+"\n"+"Row: "+row+" Col:"+col+", "+type);
@@ -479,27 +479,43 @@ function addError(row,col,type){
 }
 function addrow(){
 app.store();
+app.editing=false;
 	app.addrow();
+app.editing=true;
+app.recalc();
 }
 function addcol(){
 app.store();
+app.editing=false;
 	app.addcol();
+app.editing=true;
+app.recalc();
 }
 function delCol(col){
 app.store();
+app.editing=false;
 	app.removeCol(col);
+app.editing=true;
+app.recalc();
 }
 function delRow(row){
 app.store();
+app.editing=false;
 	app.removeRow(row);
+app.editing=true;
+app.recalc();
 }
 function setVal(row,col,val){
 app.store();
+app.editing=false;
 	app.setVal(row,col,val);
+app.editing=true;
 }
 function replace(row,col,val,val2){
 app.store();
+app.editing=false;
 	app.replace(row,col,val,val2);
+app.editing=true;
 }
 function getVal(row,col){
 	return app.getVal(row,col);
@@ -543,7 +559,7 @@ $counter2=0;
 	foreach($lines as $c){
 $timer += 100;
 ?>
-setTimeout('try {eval(\'<?php echo $c; ?>\'); } catch (e) {	if (e instanceof SyntaxError) {		addError(e.message);showcode();	}}',<?php echo $timer; ?>);
+setTimeout('try {eval(\'app.editing=false;<?php echo $c; ?>;app.editing=true;\');} catch (e) {	if (e instanceof SyntaxError) {		addError(e.message);showcode();	}}',<?php echo $timer; ?>);
 <?php
 $counter++;
 if($timer%500 ==0){
@@ -869,4 +885,22 @@ color: #fff;
 </li>
 </ul>
 </div>
-
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header" style="padding:35px 50px;">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4><span class="glyphicon glyphicon-lock"></span>Error</h4>
+        </div>
+        <div class="modal-body" style="padding:40px 50px;">
+        <div id="error"></div>
+	</div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span>Cerrar</button>
+        </div>
+      </div>
+      
+    </div>
+  </div> 

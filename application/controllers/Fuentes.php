@@ -44,26 +44,39 @@ class Fuentes extends CI_Controller {
 		return $d && $d->format($format) == $date;
 	}
 	private function region($region){
-		$region=	preg_replace("/[^A-Za-z0-9 ]/", '', $region);
-		$q = $this->db->query("Select SYS_REGION.original,SYS_REGION.final,SYS_geografico.SYS_REGION_PRINT  as print from SYS_REGION,SYS_geografico where SYS_REGION.final = SYS_geografico.SYS_REGION and SYS_REGION.original = '$region'")->result_array();
+		$q = $this->db->query('Select SYS_REGION.original,SYS_REGION.final,SYS_geografico.SYS_REGION_PRINT  as print from SYS_REGION,SYS_geografico where SYS_REGION.final = SYS_geografico.SYS_REGION and SYS_REGION.original = "'.($region).'"')->result_array();
+		if(!isset($q[0]))die("Region ".$region." no encontrada, agregue al mantenedor o verifique la codificación UTF-8 del archivoº");
 		$row = $q[0];
 		return $row; 	
 	}
 	private function provincia($provincia){
-		$provincia=	preg_replace("/[^A-Za-z0-9 ]/", '', $provincia);
-		$q = $this->db->query("Select SYS_PROVINCIA.original,SYS_PROVINCIA.final,SYS_geografico.SYS_PROVINCIA_PRINT  as print from SYS_PROVINCIA,SYS_geografico where SYS_PROVINCIA.final = SYS_geografico.SYS_PROVINCIA and SYS_PROVINCIA.original = '$provincia'")->result_array();
+		$q = $this->db->query('Select SYS_PROVINCIA.original,SYS_PROVINCIA.final,SYS_geografico.SYS_PROVINCIA_PRINT  as print from SYS_PROVINCIA,SYS_geografico where SYS_PROVINCIA.final = SYS_geografico.SYS_PROVINCIA and SYS_PROVINCIA.original = "'.($provincia).'"')->result_array();
+		if(!isset($q[0]))die("Provincia ".$provincia." no encontrada, agregue al mantenedor o verifique la codificación UTF-8 del archivoº");
 		$row = $q[0];
 		return $row; 	
 	}
 	private function comuna($comuna){
-		$comuna=	preg_replace("/[^A-Za-z0-9 ]/", '', $comuna);
-		$q = $this->db->query("Select SYS_COMUNA.original,SYS_COMUNA.final,SYS_geografico.SYS_COMUNA_PRINT  as print from SYS_COMUNA,SYS_geografico where SYS_COMUNA.final = SYS_geografico.SYS_COMUNA and SYS_COMUNA.original = '$comuna'")->result_array();
+		$q = $this->db->query('Select SYS_COMUNA.original,SYS_COMUNA.final,SYS_geografico.SYS_COMUNA_PRINT  as print from SYS_COMUNA,SYS_geografico where SYS_COMUNA.final = SYS_geografico.SYS_COMUNA and SYS_COMUNA.original = "'.($comuna).'"')->result_array();
+		if(!isset($q[0]))die("Comuna ".$comuna." no encontrada, agregue al mantenedor o verifique la codificación UTF-8 del archivoº");
 		$row = $q[0];
 		return $row; 	
 	}
 	private function pais($pais){
 		$q = $this->db->query("Select SYS_PAIS.original,SYS_PAIS.final,SYS_PAIS.final as print from SYS_PAIS where  SYS_PAIS.original = '$pais'")->result_array();
 		$row = $q[0];
+		return $row; 	
+	}
+	private function lugar($lugar){
+		$q = $this->db->query("Select SYS_lugar.original,SYS_lugar.final,SYS_lugar.final as print from SYS_lugar where  SYS_lugar.original = '$lugar'")->result_array();
+		$row = $q[0];
+		return $row; 	
+	}
+	private function coords($lugar){
+		$q = $this->db->query("Select SYS_LUGAR_COORDS.SYS_LUGAR,SYS_LUGAR_COORDS.SYS_LAT ,SYS_LUGAR_COORDS.SYS_LNG  from SYS_LUGAR_COORDS where  SYS_LUGAR_COORDS.SYS_LUGAR = '$lugar'")->result_array();
+		if(isset($q[0]))
+		  $row = $q[0];
+		else
+ 		  $row = Array('SYS_LUGAR'=>$lugar,'lat'=>'','lng'=>'');
 		return $row; 	
 	}
 
@@ -84,16 +97,16 @@ class Fuentes extends CI_Controller {
 		}
 		if($anno and  !$periodo){
 			$inicio = $anno."-01-01";
-			$fin = $anno."-01-31";		
+			$fin = $anno."-12-31";		
 			$p = Array('inicio'=>$inicio,'fin'=>$fin,'final'=>$anno,'print'=>$anno,'campo'=>"SYS_ANNO");
 		}
 		return $p;
 	}
-	public function index()
-	{
-		$q = $this->db->query("Show tables")->result_array();
-		$this->load->view('fuentes',Array('tables'=>$q));
-	}
+  public function index()
+        {
+                $q1 = $this->db->query("SELECT DISTINCT name from SYS_PREPARATIONS")->result_array();
+                $this->load->view('upload2',Array('prep'=>$q1));
+        }
 	public function confirm($table,$sure)
 	{
 		$columns = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'TMPTABLE'")->result_array();
@@ -125,6 +138,37 @@ class Fuentes extends CI_Controller {
 
 
 	}
+public function confirmasimple($table,$sure)
+	{
+		$columns = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'TMPTABLE'")->result_array();
+		$arr =Array();
+		$arr2 =Array();
+		$arr3 =Array();
+		$arr4 =Array();
+		foreach($columns as $c){
+			if($c['COLUMN_NAME'] != "id"){
+			if($c['COLUMN_NAME'] != "value"){
+				$arr[] = "A.".$c['COLUMN_NAME'];
+				$arr2[] = "A.".$c['COLUMN_NAME']." = B.".$c['COLUMN_NAME'];
+			}
+				$arr3[] = "A.".$c['COLUMN_NAME'];
+			}
+		}	
+		if($sure=="FALSE"){
+		$tmp = $this->db->query("select  count(*) as contar from TMPTABLE")->result_array();	
+		$data = $this->db->query("select count(*) as contar from $table as B, TMPTABLE as A where ".implode(' AND ',$arr2)." ")->result_array();
+				$this->load->view('tablaonlyupdate',Array('table'=>$data,'cols'=>$arr3,'tablename'=>$table,'tmp'=>$tmp));
+			
+			}else{
+				$duplicate = "ON DUPLICATE KEY UPDATE value = A.value";
+				$this->db->query("INSERT ignore INTO $table select NULL,".implode(' ,',$arr3)." from TMPTABLE as A ");
+
+				redirect('Base');
+			}
+
+
+	}
+
 	public function ver($table)
 	{
 		$columns = $this->db->query("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'$table'")->result_array();
@@ -152,7 +196,7 @@ class Fuentes extends CI_Controller {
 		$config['max_height']           = 768;
 
 		$this->load->library('upload', $config);
-		$tablename  = $this->input->post('tablename');
+		$tablename  = $this->input->post('prepname');
 		if ( ! $this->upload->do_upload('userfile'))
 		{
 			$q = $this->db->query("Show tables")->result_array();
@@ -163,12 +207,23 @@ class Fuentes extends CI_Controller {
 		else
 		{
 			$data = array('upload_data' => $this->upload->data());
-			$tablename = preg_replace ('/[^A-Za-z0-9]/', '', $tablename);
-			$sql=	$this->loadcsv($data['upload_data']['full_path'],$tablename);
-			if($sql)	
-				$this->index();
+			$tablename ="BASE_".preg_replace ('/[^A-Za-z0-9]/', '', $tablename);
+			$columna  = "directo";
+			$sql=	$this->loadcsv($data['upload_data']['full_path'],$tablename,$columna);
+			$this->confirmasimple($tablename,"FALSE");
 		}
 	}
+	public function cargadirecta($file){
+		
+		$myfile = fopen("./uploads/tmpfile.csv", "w") or die("Unable to open file!");
+		fwrite($myfile, urldecode($this->input->post('content')));
+		fclose($myfile);	
+
+		$tablename  = $this->input->post('tablename');
+		$columna  = $this->input->post('columna');
+		$sql=	$this->loadcsv("./uploads/tmpfile.csv",$tablename,$columna);
+	}
+
 	public function carga(){
 		$myfile = fopen("./uploads/tmpfile.csv", "w") or die("Unable to open file!");
 		fwrite($myfile, urldecode($this->input->post('content')));
@@ -186,11 +241,13 @@ class Fuentes extends CI_Controller {
 		$provinciai=null;
 		$comunai=null;
 		$paisi=null;
+		$lugari=null;
 		$region="region";
 		$pais="pais";
 		$provincia="provincia";
 		$comuna="comuna";
 		$periodo  = "periodo";
+		$lugar  = "lugar";
 		$datetime  = $this->input->post('datetime');
 		$levels  = $this->input->post('levels');
 		$periodoano  ="anno";;
@@ -209,35 +266,41 @@ class Fuentes extends CI_Controller {
 			$f = strtolower(trim($data[$i]));
 			if ($f) {
 				// normalize the field name, strip to 20 chars if too long
-			//	$f = substr(preg_replace ('/[^0-9a-z]/', '_', $f), 0, 20);
+			if($columna === "directo")
+				$f = substr(preg_replace ('/[^0-9a-z]/', '', $f), 0, 240);
 				$field_count++;
+				$f= str_replace(array(" "),"_",trim($f));
 				$fields[] = $f;
 				$fieldtypes[] = " DOUBLE";
 				if(strlen($datetime)>0)
-					if(strtoupper($datetime)==strtoupper($f))
+					if(strtoupper($datetime)===strtoupper($f))
 						$datetime=$i;
 				if(strlen($periodo)>0)
-					if(strtoupper($periodo)==strtoupper($f))
+					if(strtoupper($periodo)===strtoupper($f))
 						$periodoi=$i;
 				if(strlen($periodoano)>0)
-					if(strtoupper($periodoano)==strtoupper($f))
+					if(strtoupper($periodoano)===strtoupper($f))
 						$periodoanoi=$i;
 				if(strlen($region)>0)
-					if(strtoupper($region)==strtoupper($f))
+					if(strtoupper($region)===strtoupper($f))
 						$regioni=$i;
 				if(strlen($provincia)>0)
-					if(strtoupper($provincia)==strtoupper($f))
+					if(strtoupper($provincia)===strtoupper($f))
 						$provinciai=$i;
 				if(strlen($comuna)>0)
-					if(strtoupper($comuna)==strtoupper($f))
+					if(strtoupper($comuna)===strtoupper($f))
 						$comunai=$i;
 				if(strlen($pais)>0)
-					if(strtoupper($pais)==strtoupper($f))
+					if(strtoupper($pais)===strtoupper($f))
 						$paisi=$i;
+				if(strlen($lugar)>0)
+					if(strtoupper($lugar)===strtoupper($f))
+						$lugari=$i;
 			}
 		}
 		$realfields=Array();
 		$sql=Array();
+		$sqlnormal=Array();
 		for($i=1;$i<count($fields); $i++) {
 			$levels['columnas'][$i][] =$fields[$i];
 			$realfields[] = $fields[$i];
@@ -273,7 +336,10 @@ class Fuentes extends CI_Controller {
 					"SYS_PAIS"=>"''",
 					"SYS_REGION"=>"''",
 					"SYS_PROVINCIA"=>"''",
-					"SYS_COMUNA"=>"''"
+					"SYS_COMUNA"=>"''",
+					"SYS_LUGAR"=>"''",
+					"SYS_LAT"=>"''",
+					"SYS_LNG"=>"''"
 				   );
 			$PRINT = Array(
 					"SYS_MES_PRINT"=>"''",
@@ -283,6 +349,7 @@ class Fuentes extends CI_Controller {
 					"SYS_REGION_PRINT"=>"''",
 					"SYS_PROVINCIA_PRINT"=>"''",
 					"SYS_COMUNA_PRINT"=>"''",
+					"SYS_LUGAR_PRINT"=>"''",
 					"SYS_ANNO_PRINT"=>"''"
 				      );
 			/*
@@ -294,11 +361,12 @@ CASOS:
 4 lugar - provincia: listo
 5 lugar - comuna: listo
 6 lugar - pais: todo
+7 lugar - lugar: falta match con comunas
 
 
 			 */
 			//CASO POR CASO SE AGREGAN LOS CAMPOS
-			if($periodoi!=null and $periodoanoi!==null and array_key_exists($periodoi,$data)){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
+			if($periodoi!==null and $periodoanoi!==null and array_key_exists($periodoi,$data)){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
 				$per = $this->periodo($data[$periodoi],$data[$periodoanoi]); // p contiene inicio,fin,final,print,campo
 
 				foreach($per as $p){
@@ -319,6 +387,17 @@ CASOS:
 				$PRINT["SYS_ANNO_PRINT"]=$data[$periodoanoi];
 				$SYS["SYS_PERIODO_INICIO"] = "'".$p['inicio']."'"; 
 				$SYS["SYS_PERIODO_FIN"] = "'".$p['fin']."'"; 
+			}else{
+
+			}
+			
+			if(isset($lugari)){
+				$p = $this->lugar($data[$lugari]);
+				$c = $this->coords($p['final']);
+				$SYS["SYS_LAT"] = "'".$c['SYS_LAT']."'"; 
+				$SYS["SYS_LNG"] = "'".$c['SYS_LNG']."'"; 
+				$SYS["SYS_LUGAR"] = "'".$p['final']."'"; 
+				$PRINT["SYS_LUGAR_PRINT"] = "'".$p['print']."'"; 
 			}
 			if(isset($regioni)){
 				$p = $this->region($data[$regioni]);
@@ -345,6 +424,7 @@ CASOS:
 				array_push($updates,$fields[$i]." = ".$fieldsi[$i-1]."");
 			}
 			$colname="";
+			if($columna != "directo"){
 			foreach($fieldsi as $k =>$value){
 				if(!empty($levels['columnas'][$k+1])){
 					$colname= $levels['columnas'][$k+1][sizeof($levels['columnas'][$k+1])-1];	
@@ -359,10 +439,13 @@ CASOS:
 						$sql[] = "Insert ignore into  TMPTABLE values(NULL,'".implode("' , '",$levels['columnas'][$k+1])."',$value,".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate." ;";
 					}
 				}}
-			// TABLA NORMAL
-			//	$duplicate = "ON DUPLICATE KEY UPDATE ".implode(', ',$updates);
-			//						$sql[] = "Insert ignore into  $table values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate;
 
+
+			}else{
+			// TABLA NORMAL
+			$duplicatenormal = "ON DUPLICATE KEY UPDATE ".implode(', ',$updates);
+			$sqlnormal[] = "Insert ignore into  TMPTABLE values(NULL," . implode(', ', $fieldsi) .",".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicatenormal;
+			}
 		}
 
 		for($i =0;$i<count($fieldtypes);$i++){
@@ -378,7 +461,8 @@ CASOS:
 				"SYS_REGION ",
 				"SYS_PROVINCIA ",
 				"SYS_PAIS ",
-				"SYS_COMUNA "
+				"SYS_COMUNA ",
+				"SYS_LUGAR "
 			   );
 
 		$SYS= Array( 
@@ -392,7 +476,10 @@ CASOS:
 				"SYS_PAIS VARCHAR(50)",
 				"SYS_REGION VARCHAR(50)",
 				"SYS_PROVINCIA VARCHAR(50)",
-				"SYS_COMUNA VARCHAR(50)"
+				"SYS_COMUNA VARCHAR(50)",
+				"SYS_LUGAR VARCHAR(50)",
+				"SYS_LAT DOUBLE",
+				"SYS_LNG DOUBLE",
 			   );
 		$PRINT = Array(
 				"SYS_MES_PRINT VARCHAR(255)",
@@ -402,41 +489,58 @@ CASOS:
 				"SYS_REGION_PRINT VARCHAR(255)",
 				"SYS_PROVINCIA_PRINT VARCHAR(255)",
 				"SYS_COMUNA_PRINT VARCHAR(255)",
+				"SYS_LUGAR_PRINT VARCHAR(255)",
 				"SYS_ANNO_PRINT VARCHAR(255)"
 			      );
 		// COMPACTA TABLAS POR COLUMNAS
+		if($columna!="directo"){
 		if(sizeof($levels['levels'])>0){
 			$columnas = Array();
 			foreach($levels['levels'] as $level){
 				$columnas [] = "$level VARCHAR(50)";
 			}
 			$sqlcreate = "CREATE TABLE if not exists $table (id Integer PRIMARY KEY AUTO_INCREMENT,".implode(', ',$columnas).",value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
-			echo $sqlcreate;
 			$this->db->query($sqlcreate);
 			$this->db->query("DROP TABLE  IF EXISTS   TMPTABLE;");
 			$sqlcreate = "CREATE  TABLE if not exists TMPTABLE (id Integer PRIMARY KEY AUTO_INCREMENT,".implode(', ',$columnas).",value DOUBLE,".implode(', ',$SYS).",".implode(',',$PRINT)." )";
 			$this->db->query($sqlcreate);
+		$unique = "ALTER TABLE $table ADD UNIQUE (".implode(' ,',$levels['levels']).",".implode(', ',$KEY)."  )";
+		$this->db->query($unique);
+		}}else{
+			$sqlcreate = "CREATE TABLE if not exists $table (" . implode(', ', $fields) . ",".implode(', ',$SYS).",".implode(',',$PRINT)." )";
+		$this->db->query($sqlcreate);
+			$this->db->query("DROP TABLE  IF EXISTS   TMPTABLE;");
+			$sqlcreate = "CREATE TABLE if not exists TMPTABLE (" . implode(', ', $fields) . ",".implode(', ',$SYS).",".implode(',',$PRINT)." )";
+			$this->db->query($sqlcreate);
+		$unique = "ALTER TABLE $table ADD UNIQUE (".implode(', ',$realfields)."  )";
+	//	$this->db->query($unique);
 		}
 
 		if(sizeof($realfields>11)){
 			$realfields=array_slice($realfields,0,11);
 		}
-		//$this->db->query("DROP TABLE IF EXISTS $table");
-		$this->db->query($sqlcreate);
 
 
-		$unique = "ALTER TABLE $table ADD UNIQUE (".implode(' ,',$levels['levels']).",".implode(', ',$KEY)."  )";
-		$this->db->query($unique);
+		$contador=0;
 
-
-
+		if($columna!="directo"){
 		foreach($sql as $s){
 			$this->db->query($s);
-			echo $s."\n";
+		$contador++;
 		}
 		fclose($handle);
 		ini_set('auto_detect_line_endings',FALSE);
 		return $sql;
+		}else{
+		foreach($sqlnormal as $s){
+			$this->db->query($s);
+		$contador++;
+		}
+		fclose($handle);
+		ini_set('auto_detect_line_endings',FALSE);
+		return $sqlnormal;
+
+		}
 
 	}
 }

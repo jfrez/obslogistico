@@ -1,8 +1,10 @@
 function completeCol(col,startrow){
+app.recalc();
 app.store();
 	var anno=getVal(startrow,col);
 	for(i=startrow+1;i<getrows();i++){
-		if(getVal(i,col).length>0){
+		if(typeof getVal(i,col) != "undefined")
+		if(getVal(i,col).trim().length>0){
 			anno=getVal(i,col);
 		}
 			$("#cell-"+i+"-"+col).html(anno);	
@@ -18,14 +20,45 @@ app.store();
 
 function crop(irows,icols,rows,cols){
 app.store();
-	for(i=getrows()-1;i>0;i--){
-	if(i>rows)delRow(i);
-	if(i<irows)delRow(i);
-	}
-	for(j=getcols()-1;j>0;j--){
-	if(j>cols)delCol(j);
+	for(j=1;j<getcols();j++){
 	if(j<icols)delCol(j);
+	if(j>cols)delCol(j);
 	}
+
+var rowsd = Array();
+	for(i=getrows()-1;i>0;i--){
+	if(i>rows)rowsd.push(i);
+	if(i<irows)rowsd.push(i);
+	}
+	for(var row of rowsd)
+        	document.getElementById("tabla").deleteRow(row);
+	
+        $(".r").each(function(index){
+                        var cols = document.getElementById("tabla").rows[row].cells.length;
+			var td = $(this).children();
+			for(var col =0;col < td.length;col++){
+				if(col==0){
+					$(td[col]).html(index+1);
+					$(td[col]).attr("class","rows editrow"+(index+1));
+					$(td[col]).attr("id","rowindex"+(index+1));
+					$(td[col]).attr("data-row",(index+1));
+                        		$(td[col]).attr('ondblclick',"").unbind('dblclick');
+					$(td[col]).attr("ondblclick","app.editrow("+(index+1)+")");
+				}else{
+					$(td[col]).attr("id","cell-"+(index+1)+"-"+col);
+					$(td[col]).attr("data-row",(index+1));
+					$(td[col]).attr("class","cellcol"+(col)+" cellrow"+(index+1));
+                        		$(td[col]).attr('ondblclick',"").unbind('dblclick');
+		                        $(td[col]).attr('ondblclick',"app.edit("+(index+1)+","+col+")");
+
+				}
+			}
+
+                        $(this).attr("id","row"+(index+1));
+        });
+
+
+app.recalc();
 }
 function transpose(irows,icols,rows,cols){
 app.store();
@@ -48,16 +81,21 @@ var arr2 = arr[0].map(function(col, i) {
 					return row[i] 
 					}).reverse();
 			});
+//for(var i=0;i<arr[0].length;i++)	arr2[i][arr2[i].length]=arr[0][i];
                 $("[id^=cell]").removeClass("selected2");
 selected=Array();
 
 	var jj=0;
 	var ii=0;
-	for(j=irows;j<irows+arr2.length;j++){
-		for(i=icols;i<icols+arr2[0].length;i++){
+	for(j=irows;j<=irows+arr2.length;j++){
+		for(i=icols;i<=icols+arr2[0].length;i++){
 			if(j>getrows())addrow();
 			if(i>getcols())addcol();
-			$("#cell-"+j+"-"+i).html(arr2[jj][ii]);	
+}}		
+	for(j=irows;j<irows+arr2.length;j++){
+		for(i=icols;i<icols+arr2[0].length;i++){
+
+	$("#cell-"+j+"-"+i).html(arr2[jj][ii]);	
                         $("#cell-"+j+"-"+i).addClass("selected2");
                 selected.push($("#cell-"+j+"-"+i));
 			downend=document.getElementById("#cell-"+j+"-"+i);
@@ -66,6 +104,7 @@ selected=Array();
 		jj++;
 		ii=0;
 	}
+app.recalc();
 }
 function undo(){
 document.getElementById('well').innerHTML=app.tabledata.pop();
@@ -78,11 +117,13 @@ $('.dropdown-toggle').on('click', function (event) {
 }
 
 function setColumns(val){
-$("#columnas").tagsinput("removeAll");
-$("#columnas").tagsinput("add",val);
+app.editing=false;
+app.setColumns(val);
+app.editing=true;
 }
 
 function setColumn(col,val){
-$("#columnas"+col).tagsinput("removeAll");
-$("#columnas"+col).tagsinput("add",val);
+app.editing=false;
+app.setColumn(col,val);
+app.editing=true;
 }

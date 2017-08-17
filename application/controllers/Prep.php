@@ -32,6 +32,7 @@ class Prep extends CI_Controller {
 	{
 		$tablename  = $this->input->post('tablename');
 		$prepname  = $this->input->post('prepname');
+		$cargadirecta  = $this->input->post('cargadirecta');
 		$prepname=preg_replace("/[^A-Za-z0-9]/", '', $prepname);
 		$tablename=$prepname;	
 		$steps  = $this->input->post('steps');
@@ -58,7 +59,7 @@ class Prep extends CI_Controller {
 			{
 				$data = array('upload_data' => $this->upload->data());
 				$file= $data['upload_data']['full_path'];
-
+				
 				$this->load->view('preparation',Array('file'=>$file,'tablename'=>$tablename,'unidades'=>$unidades,'preparations'=>$q1,'steps'=>$steps));
 
 			}

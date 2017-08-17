@@ -11,6 +11,10 @@
 <link href="/css/reset.css" rel="stylesheet" type="text/css"  />
 <link rel='stylesheet' type='text/css' href='/css/fullcalendar.css' />
 <link rel='stylesheet' type='text/css' href='/css/custom.css' />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rainbow/1.2.0/themes/github.css">
+<link rel="stylesheet" href="/assets/google/css/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/google/css/bootstrap-theme.css">
+<link rel="stylesheet" href="/assets/google/css/todc-bootstrap.min.css">
 <script type="text/javascript" src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
 <script type="text/javascript" src="/js/custom.js"></script>
 <script src="/js/jquery-ui-1.8.13.custom.min.js" type="text/javascript" charset="utf-8"></script>

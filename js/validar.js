@@ -10,6 +10,7 @@ validador.exec=function(col,tabla){
 			if(tabla.indexOf("PAIS")>=0)$("#cell-"+1+"-"+col).html("pais");
 			if(tabla.indexOf("REGION")>=0)$("#cell-"+1+"-"+col).html("region");
 			if(tabla.indexOf("PROVINCIA")>=0)$("#cell-"+1+"-"+col).html("provincia");
+			if(tabla.indexOf("LUGAR")>=0)$("#cell-"+1+"-"+col).html("lugar");
 			if(tabla.indexOf("COMUNA")>=0)$("#cell-"+1+"-"+col).html("periodo");
 			var errors = false;
 			for(var i=2;i<getrows();i++){
