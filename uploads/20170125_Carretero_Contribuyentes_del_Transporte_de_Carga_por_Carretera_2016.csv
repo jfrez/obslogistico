@@ -1,0 +1,11 @@
+NÚMERO_ACTIVIDADES;TIPO_FLOTA;VIGENCIA;NÚMERO_CONTRIBUYENTES;TAMAÑO_FLOTA;anno
+Única Actividad;Con Flota;Con Revisión;12.511;1 vehículo;2016
+Única Actividad;Con Flota;Con Revisión;8.070;entre 2 y 3 vehículos;2016
+Única Actividad;Con Flota;Con Revisión;4.405;entre 4 y 15 vehículos;2016
+Única Actividad;Con Flota;Con Revisión;544;16 o más vehículos;2016
+Única Actividad;Con Flota;Sin Revisión;1.230;1 vehículo;2016
+Única Actividad;Con Flota;Sin Revisión;2.451;entre 2 y 3 vehículos;2016
+Única Actividad;Con Flota;Sin Revisión;530;entre 4 y 15 vehículos;2016
+Única Actividad;Con Flota;Sin Revisión;1.360;16 o más vehículos;2016
+Única Actividad;Sin Flota;N/A;29.920;N/A;2016
+Más de una Actividad;N/A;N/A;94.010;N/A;2016

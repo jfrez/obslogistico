@@ -280,15 +280,15 @@ box-shadow: none !important;
 						$dropdown ='<div class="dropdown pull-right">
 							<button class="btn btn-xs myFakeClass  dropdown-toggle" type="button"  style="float:left;"><span class="glyphicon glyphicon-cog"></span></button>
 							<ul class="dropdown-menu" style="min-width:200px;">
-							<li><a href="#" onclick="validar('.$i.',\'numeric\')">Numerico</a></li>
-							<li><a href="#" onclick="validar('.$i.',\'periodos\')">Periodo</a></li>
-							<li><a href="#" onclick="validar('.$i.',\'anno\')">Anno</a></li>
-							<li><a href="#" onclick="validar('.$i.',\'PAIS_VIEW\')">Pais</a></li>
-							<li><a href="#" onclick="validar('.$i.',\'REGION_VIEW\')">Region</a></li>
-							<li><a href="#" onclick="validar('.$i.',\'PROVINCIA_VIEW\')" >Provincia</a></li>
-							<li><a href="#" onclick="validar('.$i.',\'COMUNA_VIEW\')" >Comuna</a></li>
-							<li><a href="#" onclick="validar('.$i.',\'LUGAR_VIEW\')" >Lugar</a></li>
 							<li><input data-role="tagsinput" type="text" name="columnas'.$i.'" id="columnas'.$i.'" class="form-control atributes"></li>
+							<li>Numerico<a href="#" onclick="validar('.$i.',\'numeric\')" class="glyphicon glyphicon-ok-circle"></a></li>
+							<li>Periodo<a href="#" onclick="validar('.$i.',\'periodos\')" class="glyphicon glyphicon-ok-circle"></a></li>
+							<li>Año<a href="#" onclick="validar('.$i.',\'anno\')" class="glyphicon glyphicon-ok-circle"></a></li>
+							<li>País<a href="#" onclick="validar('.$i.',\'PAIS_VIEW\')" class="glyphicon glyphicon-ok-circle"></a></li>
+							<li>Región<a href="#" onclick="validar('.$i.',\'REGION_VIEW\')" class="glyphicon glyphicon-ok-circle"></a></li>
+							<li>Provincia<a href="#" onclick="validar('.$i.',\'PROVINCIA_VIEW\')" class="glyphicon glyphicon-ok-circle"></a></li>
+							<li>Comuna<a href="#" onclick="validar('.$i.',\'COMUNA_VIEW\')" class="glyphicon glyphicon-ok-circle"></a></li>
+							<li> Lugar <input  type="text" name="tipo'.$i.'" id="tipo'.$i.'" class="form-control atributes"><a href="#" class="glyphicon glyphicon-ok-circle" onclick="validar('.$i.',\'LUGAR_VIEW\')" ></a></li>
 							<script>
 							$(function(){
 							$("#columnas'.$i.'").on("itemAdded", function(event) {
@@ -388,6 +388,16 @@ for(var i=1;i<getcols();i++){
 ret = {levels:niveles,columnas:columnas};
 return ret;
 }
+function loadLugares(){
+var lugares = Array();
+for(var i=1;i<getcols();i++){
+ lugares[i] = $("#tipo"+i).val();
+
+}
+ret = {tipo:lugares};
+return ret;
+}
+
 
 function showcode(){
 	if(codeopen){
@@ -447,7 +457,7 @@ function sendCSV(){
 	$.ajax({
 			'url':"/?/Fuentes/carga",
 			'method':'POST',
-			data:{'tablename':'<?php echo "BASE_".$tablename;?>',content:content,periodo:'periodo',periodoano:'anno',columna:$("#columna").val(),levels:loadLevels()},
+			data:{'tablename':'<?php echo "BASE_".$tablename;?>',content:content,periodo:'periodo',periodoano:'anno',columna:$("#columna").val(),levels:loadLevels(),lugares:loadLugares()},
 			success:function(msg){
 			location.href="/?/Fuentes/confirm/<?php echo "BASE_".$tablename;?>/FALSE";
 			},

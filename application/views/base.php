@@ -50,7 +50,19 @@ width: 280px;
 <?php
 
 foreach($tables as $n => $t){
-echo "<div class='tabla pin box panel panel-default'>";
+$geo = false;
+foreach($t['desc'] as $f){
+if(starts($f['Field'],"SYS_LUGAR")){
+if($t['count'][0][$f['Field']]>1){
+$geo=true;
+}
+}
+}
+if($geo){
+echo "<div class='tabla pin box panel panel-success '>";
+}else{
+echo "<div class='tabla pin box panel panel-info'>";
+}
 echo '<div class="panel-heading">';
 $tooltip="";
 foreach($t['desc'] as $f){
@@ -63,7 +75,11 @@ $tooltip .= $f['Field']."<br>";
 
 $meta="";
 if(isset($t['meta']))$meta=$t['meta'];
+if($geo){
+echo "<h5 lass='panel-title'>".$n."<a class='badge' href='/?/Prep/getTable/$n' target='_blank'>json</a><a href='/?/Fuentes/ver/".$n."' class='badge'>ver</a><a class='glyphicon glyphicon-info-sign' data-toggle='tooltip' data-html='true' data-placement='bottom' title='$tooltip $meta' onclick='addMeta(\"$n\",\"\",\"$meta\");' ></a><a  class='glyphicon glyphicon-map-marker' onclick='geo(\"$n\")'></a></h5>";
+}else{
 echo "<h5 lass='panel-title'>".$n."<a class='badge' href='/?/Prep/getTable/$n' target='_blank'>json</a><a href='/?/Fuentes/ver/".$n."' class='badge'>ver</a><a class='glyphicon glyphicon-info-sign' data-toggle='tooltip' data-html='true' data-placement='bottom' title='$tooltip $meta' onclick='addMeta(\"$n\",\"\",\"$meta\");' ></a></h5>";
+}
 echo "</div>";
 echo '<div class="panel-body">';
 echo '<ul class="list-group">';
@@ -104,6 +120,19 @@ location.href='/?/Base';
 
 
 }
+function geo(table){
+alert("El geo proceso puede tomar unos minutos, precione aceptar para iniciar");
+$.ajax({
+url:'/?/Base/geoprocess/'+table,
+type:'POST',
+success: function(count){
+alert("Geo proceso terminado, se actualizaron "+count+" registros");
+}
+});
+
+}
+
+
 var d = document.querySelectorAll('.pin'),
     i, w, width, height;
 /*

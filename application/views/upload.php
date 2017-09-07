@@ -12,10 +12,11 @@ body {
      </div>
 <div class="clear"></div>
   <div id="content">
+<a class="btn btn-primary pull-right" href="/?/Fuentes/">Subir archivo preparado</a>
 <form action="/?/Prep/do_upload" enctype="multipart/form-data" method="post" accept-charset="utf-8">
-<a class="btn btn-primary" href="/?/Fuentes/">Insertar directo a la base?</a>
 <hr/>
  <div class="form-group">
+<h2>Preparar una fuente</h2>
 <h4>Seleccione nombre de la tabla</h4>
 <input type="hidden" value="" id="steps" name="steps"/>
 <input  placeholder="Nombre de la tabla" value="" type="text" id="prepname" name="prepname"/>

@@ -28,7 +28,7 @@ class Base extends CI_Controller {
 				$aux=$this->db->query("DESCRIBE $tname;")->result_array();
 				$sql = array();
 				foreach($aux as $k=> $field){
-					$sql[] = "(SELECT count(DISTINCT ".$field['Field'].") FROM $tname) as ".$field['Field'];
+					$sql[] = "(SELECT count(DISTINCT ".$field['Field'].") FROM $tname limit 10) as ".$field['Field'];
 					$meta = $this->db->query("Select * from Metadata where tabla = '$tname' and columna = '".$field['Field']."'")->result_array();
 					foreach($meta as $m){
 					$aux[$k]['meta'] =$m['valor'];
@@ -58,5 +58,15 @@ class Base extends CI_Controller {
 		echo json_encode($res);
 		
 	}
-
+	public function geoprocess($table){
+		$count = 0;
+	$sql = "SELECT  tabla.id, SYS_geografico.SYS_REGION,SYS_geografico.SYS_PROVINCIA,SYS_geografico.SYS_COMUNA FROM SYS_LUGAR_COORDS , division_regional_shape,$table as tabla,SYS_geografico where  tabla.SYS_LUGAR = SYS_LUGAR_COORDS.SYS_LUGAR and tabla.SYS_LUGAR_TIPO = SYS_LUGAR_COORDS.SYS_LUGAR_TIPO and SYS_geografico.SYS_UNIDAD = division_regional_shape.comuna and st_contains(    division_regional_shape.SHAPE    ,    (st_geomfromtext(st_astext(Point(SYS_LUGAR_COORDS.SYS_LNG,SYS_LUGAR_COORDS.SYS_LAT)),4326)))  ORDER BY `tabla`.`id` ASC";				
+		$q = $this->db->query($sql)->result_array();
+		foreach($q as $t){
+		$count++;
+		$sql2 = "UPDATE $table set SYS_REGION = '".$t['SYS_REGION']."', SYS_PROVINCIA = '".$t['SYS_PROVINCIA']."', SYS_COMUNA = '".$t['SYS_COMUNA']."' where id = ".$t['id']." ";
+		$this->db->query($sql2);
+		}
+		echo $count;
+	}
 }

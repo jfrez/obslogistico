@@ -14,43 +14,52 @@ validador.exec=function(col,tabla){
 			if(tabla.indexOf("COMUNA")>=0)$("#cell-"+1+"-"+col).html("periodo");
 			var errors = false;
 			for(var i=2;i<getrows();i++){
-        		  var val = getVal(i,col);
-		          var rowerror=true;
-			  for(var j =0;j<table.length;j++){
-			    if(val.trim()==table[j].original){
+			var val = getVal(i,col);
+			var rowerror=true;
+			for(var j =0;j<table.length;j++){
+			if(val.trim()==table[j].original){
+
+			if(tabla.indexOf("LUGAR")>=0){
+			tipo = $("#tipo"+col).val();
+			if(tipo.trim()==table[j].tipo){
+			$("#cell-"+i+"-"+col).html(table[j].print);
+			rowerror=false;
+			}
+			}else{
 				$("#cell-"+i+"-"+col).html(table[j].print);
 				rowerror=false;
-			    }
-			  }
+			}
+			}
+			}
 			if(rowerror){
-			  addError(i,col,tabla);	
-			  $("#cell-"+i+"-"+col).addClass("error");
-			  $("#cell-"+i+"-"+col).removeClass("correct");
+				addError(i,col,tabla);	
+				$("#cell-"+i+"-"+col).addClass("error");
+				$("#cell-"+i+"-"+col).removeClass("correct");
 			}else{
-			  $("#cell-"+i+"-"+col).addClass("correct");
-			  $("#cell-"+i+"-"+col).removeClass("error");
+				$("#cell-"+i+"-"+col).addClass("correct");
+				$("#cell-"+i+"-"+col).removeClass("error");
 			}
 			}
-		}
+			}
 	});
 }
 
 validador.anno=function(col,tabla){
-				$("#cell-"+1+"-"+col).html("anno");
-		validador.numeric(col,tabla);
+	$("#cell-"+1+"-"+col).html("anno");
+	validador.numeric(col,tabla);
 
 }
 validador.numeric=function(col,tabla){
-			for(var i=2;i<getrows();i++){
-        		  var val = getVal(i,col);
-			if(!$.isNumeric( val ) ){
-				console.log(val);
-			  addError(i,col,tabla);	
-			  $("#cell-"+i+"-"+col).addClass("error");
-			}else{
-			  $("#cell-"+i+"-"+col).addClass("correct");
-			}
-}
+	for(var i=2;i<getrows();i++){
+		var val = getVal(i,col);
+		if(!$.isNumeric( val ) ){
+			console.log(val);
+			addError(i,col,tabla);	
+			$("#cell-"+i+"-"+col).addClass("error");
+		}else{
+			$("#cell-"+i+"-"+col).addClass("correct");
+		}
+	}
 
 }
 

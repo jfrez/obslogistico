@@ -66,8 +66,8 @@ class Fuentes extends CI_Controller {
 		$row = $q[0];
 		return $row; 	
 	}
-	private function lugar($lugar){
-		$q = $this->db->query("Select SYS_lugar.original,SYS_lugar.final,SYS_lugar.final as print from SYS_lugar where  SYS_lugar.original = '$lugar'")->result_array();
+	private function lugar($lugar,$tipo){
+		$q = $this->db->query("Select SYS_lugar.original,SYS_lugar.tipo,SYS_lugar.final,SYS_lugar.final as print from SYS_lugar where  SYS_lugar.original = '$lugar' and SYS_lugar.tipo = '$tipo'")->result_array();
 		$row = $q[0];
 		return $row; 	
 	}
@@ -250,6 +250,7 @@ public function confirmasimple($table,$sure)
 		$lugar  = "lugar";
 		$datetime  = $this->input->post('datetime');
 		$levels  = $this->input->post('levels');
+		$lugares  = $this->input->post('lugares');
 		$periodoano  ="anno";;
 		// get structure from csv and insert db
 		ini_set('auto_detect_line_endings',TRUE);
@@ -338,6 +339,7 @@ public function confirmasimple($table,$sure)
 					"SYS_PROVINCIA"=>"''",
 					"SYS_COMUNA"=>"''",
 					"SYS_LUGAR"=>"''",
+					"SYS_LUGAR_TIPO"=>"''",
 					"SYS_LAT"=>"''",
 					"SYS_LNG"=>"''"
 				   );
@@ -368,7 +370,6 @@ CASOS:
 			//CASO POR CASO SE AGREGAN LOS CAMPOS
 			if($periodoi!==null and $periodoanoi!==null and array_key_exists($periodoi,$data)){ // periodos en formato: [mes,trimestres,trimestre movil,semestres X  año] 
 				$per = $this->periodo($data[$periodoi],$data[$periodoanoi]); // p contiene inicio,fin,final,print,campo
-
 				foreach($per as $p){
 					$SYS[$p['campo']]="'".$p['final']."'"; //MIRA LA TABLA SYS_periodo
 					$PRINT[$p['campo']."_PRINT"]="'".$p['print']."'"; //MIRA LA TABLA SYS_periodo
@@ -392,11 +393,15 @@ CASOS:
 			}
 			
 			if(isset($lugari)){
-				$p = $this->lugar($data[$lugari]);
+				$tipo = $lugares['tipo'][$lugari+1];
+				$p = $this->lugar($data[$lugari],$tipo);
 				$c = $this->coords($p['final']);
+				if(!isset($c['SYS_LAT']))$c['SYS_LAT']=0;
+				if(!isset($c['SYS_LNG']))$c['SYS_LNG']=0;
 				$SYS["SYS_LAT"] = "'".$c['SYS_LAT']."'"; 
 				$SYS["SYS_LNG"] = "'".$c['SYS_LNG']."'"; 
 				$SYS["SYS_LUGAR"] = "'".$p['final']."'"; 
+				$SYS["SYS_LUGAR_TIPO"] = "'".$p['tipo']."'"; 
 				$PRINT["SYS_LUGAR_PRINT"] = "'".$p['print']."'"; 
 			}
 			if(isset($regioni)){
@@ -439,8 +444,6 @@ CASOS:
 						$sql[] = "Insert ignore into  TMPTABLE values(NULL,'".implode("' , '",$levels['columnas'][$k+1])."',$value,".implode(', ',$SYS).",".implode(',',$PRINT).  ")  ".$duplicate." ;";
 					}
 				}}
-
-
 			}else{
 			// TABLA NORMAL
 			$duplicatenormal = "ON DUPLICATE KEY UPDATE ".implode(', ',$updates);
@@ -462,7 +465,8 @@ CASOS:
 				"SYS_PROVINCIA ",
 				"SYS_PAIS ",
 				"SYS_COMUNA ",
-				"SYS_LUGAR "
+				"SYS_LUGAR ",
+				"SYS_LUGAR_TIPO",
 			   );
 
 		$SYS= Array( 
@@ -478,6 +482,7 @@ CASOS:
 				"SYS_PROVINCIA VARCHAR(50)",
 				"SYS_COMUNA VARCHAR(50)",
 				"SYS_LUGAR VARCHAR(50)",
+				"SYS_LUGAR_TIPO VARCHAR(50)",
 				"SYS_LAT DOUBLE",
 				"SYS_LNG DOUBLE",
 			   );

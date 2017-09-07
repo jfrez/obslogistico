@@ -200,7 +200,7 @@ class Mantenedor extends CI_Controller {
 			$crud->set_table('SYS_lugar');
 			$crud->set_subject('Lugar');
 			$crud->required_fields('id');
-			$crud->columns('original','final','print');
+			$crud->columns('original','final','tipo','print');
 
 			$output = $crud->render();
 

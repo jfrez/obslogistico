@@ -32,7 +32,7 @@
            
            <div class="top-nav">
                <ul>
-                   <li><a href="/" title="KPI" class="<?php if($active==1)echo "active"; ?>" >Bases</a></li><!--Add "active" Class for Current Page-->
+                   <li><a href="/?/Base" title="KPI" class="<?php if($active==1)echo "active"; ?>" >Bases</a></li><!--Add "active" Class for Current Page-->
                    <li><a href="/?/Prep" class="<?php if($active==2)echo "active"; ?>" title="Forms" >Preparador</a></li>
 <!--                   <li><a href="/?/Base" class="<?php if($active==3)echo "active"; ?> " title="Elements" ><img src="/images/icons/elements.png" alt="Elements" /></a></li>-->
                    <li><a href="/?/Mantenedor" class="<?php if($active==4)echo "active"; ?>" title="Additional Elements" >Man</a></li>
