@@ -28,7 +28,6 @@
  
    <div class="header">
     
-           <div id="logo"><img src="/images/logo.png" width="150px" alt="Logo" /></div>
            
            <div class="top-nav">
                <ul>

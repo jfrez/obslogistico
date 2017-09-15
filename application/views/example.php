@@ -16,7 +16,6 @@ body {
 		<a class="button" href='<?php echo site_url('Mantenedor/provincia')?>'>Provincia</a> |
 		<a class="button" href='<?php echo site_url('Mantenedor/region')?>'>Region</a> |
 		<a class="button" href='<?php echo site_url('Mantenedor/pais')?>'>Pais</a> |
-		<a class="button" href='<?php echo site_url('Mantenedor/Unidad')?>'>Unidad</a> 
 		<a class="button" href='<?php echo site_url('Mantenedor/Preparation')?>'>Preparaciones</a> 
 		<a class="button" href='<?php echo site_url('Mantenedor/Lugar')?>'>Nombres de Lugares</a> 
 		<a class="button" href='<?php echo site_url('Mantenedor/LugarCoords')?>'>Coordenadas de Lugares</a> 

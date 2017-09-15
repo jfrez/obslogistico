@@ -219,7 +219,7 @@ class Mantenedor extends CI_Controller {
 			$crud->set_table('SYS_LUGAR_COORDS');
 			$crud->set_subject('Lugar');
 			$crud->required_fields('id');
-			$crud->columns('SYS_LUGAR','SYS_LAT','SYS_LNG');
+			$crud->columns('SYS_LUGAR','SYS_LUGAR_TIPO','SYS_LAT','SYS_LNG');
 
 			$output = $crud->render();
 
